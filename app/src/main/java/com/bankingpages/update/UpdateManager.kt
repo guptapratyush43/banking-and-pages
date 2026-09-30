@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
@@ -36,7 +37,8 @@ object UpdateManager {
 
     sealed interface Download {
         data object Idle : Download
-        data class Running(val progress: Float?) : Download
+        /** [quiet]: fetched ahead in the background on Wi-Fi, before the user has tapped Update. */
+        data class Running(val progress: Float?, val quiet: Boolean = false) : Download
         data class Ready(val file: File) : Download
         data class Failed(val message: String) : Download
     }
@@ -177,9 +179,27 @@ object UpdateManager {
         .trim()
 
     /** Downloads the APK with progress, then checks it really is our app, signed by us. */
-    suspend fun startDownload(release: Release) {
-        if (_download.value is Download.Running) return
-        _download.value = Download.Running(0f)
+    @Volatile private var quiet = false
+
+    private fun unmetered(): Boolean {
+        val cm = app.getSystemService(android.net.ConnectivityManager::class.java) ?: return false
+        return cm.activeNetwork != null && !cm.isActiveNetworkMetered
+    }
+
+    /**
+     * On Wi-Fi, starts fetching the update the moment it is offered, so tapping Update
+     * usually goes straight to Install. Never on mobile data: that waits for the tap.
+     */
+    fun prefetch(release: Release) {
+        if (_download.value !is Download.Idle || !unmetered()) return
+        com.bankingpages.AppScope.launch { startDownload(release, silent = true) }
+    }
+
+    suspend fun startDownload(release: Release, silent: Boolean = false) {
+        // Already fetching in the background: tapping Update just brings its progress into view.
+        (_download.value as? Download.Running)?.let { r -> if (r.quiet && !silent) { quiet = false; _download.value = r.copy(quiet = false) }; return }
+        quiet = silent
+        _download.value = Download.Running(0f, quiet)
         try {
             val file = withContext(Dispatchers.IO) {
                 val dir = File(app.cacheDir, "updates").apply { mkdirs(); listFiles()?.forEach { it.delete() } }
@@ -198,15 +218,18 @@ object UpdateManager {
                     val digest = MessageDigest.getInstance("SHA-256")
                     c.inputStream.use { input ->
                         out.outputStream().use { output ->
-                            val buf = ByteArray(64 * 1024)
+                            val buf = ByteArray(256 * 1024)
                             var done = 0L
+                            var shown = -1f
                             while (true) {
                                 val n = input.read(buf)
                                 if (n < 0) break
                                 output.write(buf, 0, n)
                                 digest.update(buf, 0, n)
                                 done += n
-                                _download.value = Download.Running(if (total > 0) (done.toFloat() / total).coerceIn(0f, 1f) else null)
+                                val p = if (total > 0) (done.toFloat() / total).coerceIn(0f, 1f) else null
+                                // Only whole-percent steps reach the screen, not every chunk.
+                                if (p == null || p - shown >= 0.01f) { shown = p ?: shown; _download.value = Download.Running(p, quiet) }
                             }
                         }
                     }
@@ -222,7 +245,8 @@ object UpdateManager {
             }
             _download.value = Download.Ready(file)
         } catch (e: Exception) {
-            _download.value = Download.Failed(
+            // A background fetch that fails just waits for the tap; only a tapped one shows the error.
+            _download.value = if (quiet) Download.Idle else Download.Failed(
                 if (e is java.net.UnknownHostException || e is java.net.SocketTimeoutException) "No internet right now. Try again in a bit."
                 else e.message ?: "Download failed."
             )

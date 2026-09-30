@@ -20,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +52,9 @@ fun UpdateDialog(release: UpdateManager.Release) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
     val download by UpdateManager.download.collectAsStateWithLifecycle()
-    val running = download is Download.Running
+    val running = (download as? Download.Running)?.quiet == false
     val verifying by UpdateManager.verifying.collectAsStateWithLifecycle()
+    LaunchedEffect(release.version, verifying) { if (!verifying) UpdateManager.prefetch(release) }
     Dialog(onDismissRequest = { if (!running) UpdateManager.close() }, properties = DialogProperties(dismissOnClickOutside = !running)) {
         WarmCard(padding = 22.dp, radius = 22.dp) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
@@ -97,7 +99,7 @@ fun UpdateDialog(release: UpdateManager.Release) {
             }
             Spacer(Modifier.height(18.dp))
             when (val d = download) {
-                is Download.Running -> {
+                is Download.Running -> if (d.quiet) Choice(release, null) else {
                     Text(d.progress?.let { "Downloading… ${(it * 100).toInt()}%" } ?: "Downloading…", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                     Spacer(Modifier.height(8.dp))
                     Box(Modifier.fillMaxWidth().height(8.dp).clip(Pill).background(scheme.surfaceVariant)) {
@@ -105,18 +107,27 @@ fun UpdateDialog(release: UpdateManager.Release) {
                     }
                 }
                 // Going to Android's installer isn't leaving the app: don't ask for the PIN on the way back.
-                is Download.Ready -> PrimaryButton("Install", null, { Pin.awayOnPurpose = true; UpdateManager.install(context, d.file) }, Modifier.fillMaxWidth())
-                else -> {
-                    if (d is Download.Failed) {
-                        Text(d.message, style = MaterialTheme.typography.bodySmall, color = LocalStatusColors.current.danger)
-                        Spacer(Modifier.height(10.dp))
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                        SecondaryButton("Ignore", null, { UpdateManager.ignore(release) }, Modifier.weight(1f), tint = scheme.onSurface)
-                        PrimaryButton("Update", null, { AppScope.launch { UpdateManager.startDownload(release) } }, Modifier.weight(1f))
-                    }
+                is Download.Ready -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    SecondaryButton("Ignore", null, { UpdateManager.ignore(release) }, Modifier.weight(1f), tint = scheme.onSurface)
+                    PrimaryButton("Install", null, { Pin.awayOnPurpose = true; UpdateManager.install(context, d.file) }, Modifier.weight(1f))
                 }
+                else -> Choice(release, (d as? Download.Failed)?.message)
             }
+        }
+    }
+}
+
+@Composable
+private fun Choice(release: UpdateManager.Release, error: String?) {
+    val scheme = MaterialTheme.colorScheme
+    Column {
+        if (error != null) {
+            Text(error, style = MaterialTheme.typography.bodySmall, color = LocalStatusColors.current.danger)
+            Spacer(Modifier.height(10.dp))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            SecondaryButton("Ignore", null, { UpdateManager.ignore(release) }, Modifier.weight(1f), tint = scheme.onSurface)
+            PrimaryButton("Update", null, { AppScope.launch { UpdateManager.startDownload(release) } }, Modifier.weight(1f))
         }
     }
 }

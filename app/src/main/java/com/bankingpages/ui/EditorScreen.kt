@@ -395,7 +395,7 @@ fun ChapterCard(
     action: (@Composable () -> Unit)? = null, content: @Composable () -> Unit
 ) {
     val chapter = CHAPTERS[index]
-    // Picked from the bar: the card glows once in its own colour, so the eye lands on it.
+    // Picked from the bar: the card breathes once, ringed in its own colour, so the eye lands on it.
     val breath = remember { Animatable(0f) }
     LaunchedEffect(pulse) {
         if (pulse.second == index && pulse.first > 0) {
@@ -412,23 +412,15 @@ fun ChapterCard(
         modifier = Modifier
             .onGloballyPositioned { tops[index] = it.positionInParent().y.toInt() }
             .entrance(index + 1, chapter.title, seen)
-            // A soft coloured glow that fades out at its edges, no hard outline.
-            .graphicsLayer {
-                val v = breath.value
-                val s = 1f + 0.02f * v; scaleX = s; scaleY = s
-                shape = RoundedCornerShape(18.dp)
-                clip = false
-                shadowElevation = 26.dp.toPx() * v
-                ambientShadowColor = chapter.tint
-                spotShadowColor = chapter.tint
-            }
+            .graphicsLayer { val s = 1f + 0.025f * breath.value; scaleX = s; scaleY = s }
             .drawWithContent {
                 drawContent()
                 val v = breath.value
-                if (v > 0f) drawRoundRect(
-                    Brush.radialGradient(listOf(chapter.tint.copy(alpha = 0.16f * v), chapter.tint.copy(alpha = 0.04f * v)), center = center, radius = size.maxDimension * 0.75f),
-                    cornerRadius = CornerRadius(18.dp.toPx())
-                )
+                if (v > 0f) {
+                    val r = CornerRadius(18.dp.toPx())
+                    drawRoundRect(chapter.tint.copy(alpha = 0.10f * v), cornerRadius = r)
+                    drawRoundRect(chapter.tint.copy(alpha = v), cornerRadius = r, style = Stroke(3.dp.toPx()))
+                }
             }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
