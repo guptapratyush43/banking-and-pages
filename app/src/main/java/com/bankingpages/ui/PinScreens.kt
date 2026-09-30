@@ -12,6 +12,8 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material.icons.outlined.Badge
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.WarningAmber
 import com.bankingpages.data.Recovery
@@ -581,9 +583,14 @@ private fun AadhaarCheck(onOk: () -> Unit, onCancel: () -> Unit, onErase: () -> 
     }
 }
 
-/** Profile: check the current PIN, then add or change the Aadhaar number for PIN reset. */
+/**
+ * Profile: check the current PIN, then add the Aadhaar number for PIN reset. If one is already
+ * saved, say so first and offer to change it.
+ */
 @Composable
 fun RecoveryFlow(onDone: (Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val saved = remember { Recovery.isSet }
     var step by remember { mutableStateOf(0) }
     AnimatedContent(
         targetState = step,
@@ -593,18 +600,32 @@ fun RecoveryFlow(onDone: (Boolean) -> Unit) {
         },
         label = "recovery"
     ) { s ->
-        if (s == 0) PinPanel(Icons.Outlined.Lock, "Current PIN", "Enter your PIN first", onComplete = { pin ->
-            val ok = withContext(Dispatchers.Default) { Pin.verify(pin) }
-            if (ok) step = 1
-            ok
-        }, footer = {
-            Text("Cancel", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.bounceClick(0.92f) { onDone(false) }.padding(12.dp))
-        })
-        else AadhaarSetup(
-            title = if (Recovery.isSet) "Change your Aadhaar number" else "Add your Aadhaar number",
-            primary = "Save", secondary = "Cancel", onSaved = { onDone(true) }, onSecondary = { onDone(false) }, skipWarning = false
-        )
+        when (s) {
+            0 -> PinPanel(Icons.Outlined.Lock, "Current PIN", "Enter your PIN first", onComplete = { pin ->
+                val ok = withContext(Dispatchers.Default) { Pin.verify(pin) }
+                if (ok) step = if (saved) 1 else 2
+                ok
+            }, footer = {
+                Text("Cancel", style = MaterialTheme.typography.labelLarge, color = scheme.primary,
+                    modifier = Modifier.bounceClick(0.92f) { onDone(false) }.padding(12.dp))
+            })
+            1 -> AadhaarPage(
+                "Aadhaar number saved",
+                "You've already saved your Aadhaar number here for resetting your PIN. To use a different one, change it below.",
+                scheme.onSurfaceVariant
+            ) {
+                Note(Icons.Outlined.CheckCircle, "For your safety the number itself is never shown. Only a protected code made from it is kept, on this phone and in your Google Drive backup.", LocalStatusColors.current.success)
+                Spacer(Modifier.height(18.dp))
+                PrimaryButton("Change Aadhaar number", Icons.Outlined.Edit, { step = 2 }, Modifier.fillMaxWidth())
+                Spacer(Modifier.height(10.dp))
+                SecondaryButton("Done", null, { onDone(false) }, Modifier.fillMaxWidth(), tint = scheme.onSurface)
+            }
+            else -> AadhaarSetup(
+                title = if (saved) "Change your Aadhaar number" else "Add your Aadhaar number",
+                primary = if (saved) "Update" else "Save", secondary = "Cancel",
+                onSaved = { onDone(true) }, onSecondary = { onDone(false) }, skipWarning = false
+            )
+        }
     }
 }
 

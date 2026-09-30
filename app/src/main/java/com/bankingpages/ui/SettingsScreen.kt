@@ -179,6 +179,8 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                                 }
                             }
                         })
+                        Divider()
+                        SettingRow(Icons.AutoMirrored.Outlined.Logout, "Log out", "Locks the app now. Your PIN opens it again", onClick = { Pin.lock() })
                     }
                 }
 
@@ -206,7 +208,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
             exit = slideOutHorizontally(Motion.push(androidx.compose.ui.unit.IntOffset.VisibilityThreshold)) { it }
         ) {
             BackHandler { recoveryFlow = false }
-            RecoveryFlow { saved -> recoveryFlow = false; if (saved) toast(context, "Aadhaar number saved for PIN reset") }
+            RecoveryFlow { saved -> recoveryFlow = false; if (saved) toast(context, if (hasRecovery) "Aadhaar number updated for PIN reset" else "Aadhaar number saved for PIN reset") }
         }
     }
 
