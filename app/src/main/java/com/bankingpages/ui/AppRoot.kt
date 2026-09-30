@@ -21,6 +21,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import android.os.Build
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +30,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Person
@@ -121,6 +123,10 @@ fun AppRoot(nav: NavViewModel) {
             var everUnlocked by rememberSaveable { mutableStateOf(unlocked) }
             LaunchedEffect(unlocked) { if (unlocked) everUnlocked = true }
             if (everUnlocked) MainNav(nav)
+            // The update pop-up waits until the app is unlocked.
+            val update by com.bankingpages.update.UpdateManager.offer.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { runCatching { com.bankingpages.update.UpdateManager.checkOnLaunch() } }
+            if (unlocked) update?.let { UpdateDialog(it) }
 
             val lockState = remember { MutableTransitionState(!unlocked) }
             lockState.targetState = !unlocked
@@ -131,7 +137,7 @@ fun AppRoot(nav: NavViewModel) {
             ) {
                 LockScreen(
                     fingerprintOn = settings.fingerprint && fingerprintStatus(context) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS,
-                    onFingerprint = { (context as? FragmentActivity)?.let { askFingerprint(it, "Unlock Banking Pages") { Pin.unlockWithFingerprint() } } },
+                    onFingerprint = { (context as? FragmentActivity)?.let { askFingerprint(it, "Unlock Banking and Pages") { Pin.unlockWithFingerprint() } } },
                     onForgot = { eraseEverything(context) }
                 )
             }
@@ -179,7 +185,7 @@ private fun MainNav(nav: NavViewModel) {
                     HomeScreen(
                         accounts = accounts,
                         docs = docs,
-                        seen = nav.seen,
+                        seen = remember { mutableSetOf() },
                         onAddBank = { go(Screen.Picker) },
                         onOpenAccount = { go(Screen.Detail(it.id)) },
                         onScanDoc = adder.scan,
@@ -240,10 +246,10 @@ private fun HomeShell(tab: Int, onTab: (Int) -> Unit, vault: @Composable () -> U
     val backdrop = rememberLayerBackdrop()
     var covered by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        // Tabs swap in place with a soft fade; each one's cards then rise in, every time you arrive.
         AnimatedContent(
             targetState = tab,
-            // Tabs swap in place: the old one goes at once and the new one fades in, nothing slides.
-            transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(snap()) },
+            transitionSpec = { fadeIn(tween(220, delayMillis = 70)) togetherWith fadeOut(tween(110)) },
             modifier = Modifier.fillMaxSize().layerBackdrop(backdrop),
             label = "tabs"
         ) { t -> if (t == 0) vault() else SettingsScreen(onOverlay = { covered = it }) }
@@ -275,7 +281,7 @@ private fun GlassBar(backdrop: LayerBackdrop, selected: Int, onSelect: (Int) -> 
             .padding(bottom = 18.dp)
             .drawBackdrop(
                 backdrop = backdrop,
-                shape = { CircleShape },
+                shape = { RoundedCornerShape(24.dp) },
                 effects = {
                     vibrancy()
                     blur(8.dp.toPx())
@@ -285,7 +291,7 @@ private fun GlassBar(backdrop: LayerBackdrop, selected: Int, onSelect: (Int) -> 
             )
             .padding(6.dp)
     ) {
-        Box(Modifier.offset { IntOffset(x.roundToPx(), 0) }.size(TabWidth, TabHeight).background(AccentBrush, CircleShape))
+        Box(Modifier.offset { IntOffset(x.roundToPx(), 0) }.size(TabWidth, TabHeight).background(AccentBrush, RoundedCornerShape(18.dp)))
         Row {
             listOf(Icons.Rounded.AccountBalanceWallet to "Vault", Icons.Rounded.Person to "Profile").forEachIndexed { i, (icon, label) ->
                 val tint by animateColorAsState(if (i == selected) Color.White else scheme.onSurfaceVariant, label = "tabTint")

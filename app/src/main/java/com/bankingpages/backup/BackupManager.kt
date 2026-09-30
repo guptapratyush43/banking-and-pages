@@ -40,7 +40,7 @@ class WrongPasswordException : IOException("That PIN doesn't open this backup. U
  * Backs up the whole vault (details, photos, PDFs, custom logos) as one file in
  * Drive's hidden app folder, locked with a key made from the app PIN. Restoring on
  * a new phone asks for that PIN, and the restored PIN keeps working there.
- * Any change is backed up a few seconds later in the background.
+ * Any change is backed up at once in the background.
  */
 object BackupManager {
     private const val BACKUP_NAME = "banking-pages-backup.bin"
@@ -70,7 +70,8 @@ object BackupManager {
     private fun onDataChanged() {
         if (!ready || restoring) return
         val work = OneTimeWorkRequestBuilder<BackupWorker>()
-            .setInitialDelay(5, TimeUnit.SECONDS)
+            // Straight away; a second change replaces the queued run, so bursts still make one upload.
+            .setInitialDelay(1, TimeUnit.SECONDS)
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .build()
         WorkManager.getInstance(app).enqueueUniqueWork("auto-backup", ExistingWorkPolicy.REPLACE, work)

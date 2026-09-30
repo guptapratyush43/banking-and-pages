@@ -2,8 +2,10 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <!-- A bold bank: roof, three pillars and a step -->
-    <path android:fillColor="#FFFFFFFF" android:pathData="M54,31.5L77,44.5a1.6,1.6 0 0,1 -0.8,3H31.8a1.6,1.6 0 0,1 -0.8,-3Z" />
-    <path android:fillColor="#F0FFFFFF" android:pathData="M36.5,51.5h7v16h-7zM50.5,51.5h7v16h-7zM64.5,51.5h7v16h-7z" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M33.5,71h41a2.5,2.5 0 0,1 2.5,2.5v0.5a2.5,2.5 0 0,1 -2.5,2.5h-41a2.5,2.5 0 0,1 -2.5,-2.5v-0.5a2.5,2.5 0 0,1 2.5,-2.5z" />
+    <!-- A bold bank: roof, two pillars and a step, with a document standing in the middle -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M54,29.5L79,43.6a1.7,1.7 0 0,1 -0.85,3.2H29.85a1.7,1.7 0 0,1 -0.85,-3.2Z" />
+    <path android:fillColor="#F0FFFFFF" android:pathData="M33.5,50.5h7.5v18h-7.5zM67,50.5h7.5v18h-7.5z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M31.5,72h45a2.6,2.6 0 0,1 2.6,2.6v0.8a2.6,2.6 0 0,1 -2.6,2.6h-45a2.6,2.6 0 0,1 -2.6,-2.6v-0.8a2.6,2.6 0 0,1 2.6,-2.6z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M47.5,50h8.5l5.5,5.5v11.5a1.8,1.8 0 0,1 -1.8,1.8h-12.2a1.8,1.8 0 0,1 -1.8,-1.8v-15.2a1.8,1.8 0 0,1 1.8,-1.8z" />
+    <path android:fillColor="#FFD9482B" android:pathData="M48.8,58.6h10.4v1.6h-10.4zM48.8,62.2h10.4v1.6h-10.4zM48.8,65.8h6.4v1.6h-6.4z" />
 </vector>

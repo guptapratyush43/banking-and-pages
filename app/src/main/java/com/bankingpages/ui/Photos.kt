@@ -8,7 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,6 +27,8 @@ import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.DocumentScanner
+import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.ReceiptLong
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -51,7 +53,10 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import com.bankingpages.data.PhotoSlot
 import com.bankingpages.data.Pin
 import com.bankingpages.files.Media
@@ -72,12 +77,14 @@ class Scanner(val scan: (pages: Int, pdf: Boolean) -> Unit)
  * when asked, the PDF.
  */
 @Composable
-fun rememberScanner(onResult: (pages: List<Uri>, pdf: Uri?) -> Unit): Scanner {
+fun rememberScanner(onCancel: () -> Unit = {}, onResult: (pages: List<Uri>, pdf: Uri?) -> Unit): Scanner {
     val context = LocalContext.current
     val callback by rememberUpdatedState(onResult)
+    val cancelled by rememberUpdatedState(onCancel)
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { res ->
         val r = GmsDocumentScanningResult.fromActivityResultIntent(res.data)
         if (res.resultCode == Activity.RESULT_OK && r != null) callback(r.pages?.map { it.imageUri }.orEmpty(), r.pdf?.uri)
+        else cancelled()
     }
     return remember {
         Scanner { pages, pdf ->
@@ -114,79 +121,136 @@ private fun PhotoSlot.look() = when (this) {
 }
 
 /**
- * Cheque, passbook, debit card and credit card as one row that scrolls sideways,
- * each with its own icon and colour. An empty one opens the scanner; a card takes
- * its front and its back in the same scan and keeps them as one picture.
+ * Cheque, passbook, debit card and credit card as a two-column grid, each with its
+ * own icon and colour. An empty one opens the scanner. A card is scanned twice, the
+ * front and then the back, and both are kept as one picture. With [actions], a filled
+ * tile carries its own small Share and Download.
  */
 @Composable
-fun PhotoStrip(
+fun PhotoGrid(
     photos: Map<PhotoSlot, String>,
+    fileLabel: String,
     onOpen: (PhotoSlot) -> Unit,
     onAdd: (PhotoSlot, List<Uri>) -> Unit,
     onRemove: ((PhotoSlot) -> Unit)?,
     busySlot: PhotoSlot? = null,
-    edgePadding: androidx.compose.ui.unit.Dp = 0.dp
+    actions: Boolean = false
 ) {
+    val context = LocalContext.current
     var target by rememberSaveable { mutableStateOf<PhotoSlot?>(null) }
-    val scanner = rememberScanner { pages, _ -> target?.let { if (pages.isNotEmpty()) onAdd(it, pages) } }
+    // A card's front, waiting for its back.
+    var front by rememberSaveable { mutableStateOf<String?>(null) }
+    val again = remember { arrayOfNulls<Scanner>(1) }
+    val scanner = rememberScanner(
+        // Backing out of the second scan keeps the front on its own.
+        onCancel = { front?.let { f -> target?.let { onAdd(it, listOf(Uri.parse(f))) } }; front = null }
+    ) { pages, _ ->
+        val slot = target
+        val page = pages.firstOrNull()
+        if (slot != null && page != null) {
+            if (slot.isCard && front == null) {
+                front = page.toString()
+                toast(context, "Front saved. Now scan the back")
+                again[0]?.scan?.invoke(1, false)
+            } else {
+                onAdd(slot, listOfNotNull(front?.let(Uri::parse), page))
+                front = null
+            }
+        }
+    }
+    again[0] = scanner
     val slots = PhotoSlot.entries.filter { !it.legacy || it in photos }
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = edgePadding)
-    ) {
-        slots.forEach { slot ->
-            PhotoTile(
-                slot, photos[slot], busy = busySlot == slot,
-                onClick = { if (photos[slot] != null) onOpen(slot) else { target = slot; scanner.scan(if (slot.isCard) 2 else 1, false) } },
-                onRemove = if (onRemove != null && photos[slot] != null) ({ onRemove(slot) }) else null
-            )
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        slots.chunked(2).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                pair.forEach { slot ->
+                    PhotoTile(
+                        slot, photos[slot], busy = busySlot == slot,
+                        fileName = "$fileLabel - ${slot.label}.jpg", actions = actions,
+                        onClick = {
+                            if (photos[slot] != null) onOpen(slot)
+                            else {
+                                target = slot; front = null
+                                if (slot.isCard) toast(context, "Scan the front first")
+                                scanner.scan(1, false)
+                            }
+                        },
+                        onRemove = if (onRemove != null && photos[slot] != null) ({ onRemove(slot) }) else null,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
         }
     }
 }
 
 @Composable
-private fun PhotoTile(slot: PhotoSlot, blobId: String?, busy: Boolean, onClick: () -> Unit, onRemove: (() -> Unit)?) {
+private fun MiniAction(icon: ImageVector, description: String, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(30.dp).bounceClick(0.85f, onClick = onClick).background(scheme.surface, CircleShape)
+    ) { Icon(icon, description, tint = scheme.primary, modifier = Modifier.size(15.dp)) }
+}
+
+@Composable
+private fun PhotoTile(
+    slot: PhotoSlot, blobId: String?, busy: Boolean, fileName: String, actions: Boolean,
+    onClick: () -> Unit, onRemove: (() -> Unit)?, modifier: Modifier = Modifier
+) {
+    val scheme = MaterialTheme.colorScheme
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val look = slot.look()
     val img = rememberPhoto(blobId, 640)
-    val shape = RoundedCornerShape(22.dp)
+    val shape = RoundedCornerShape(16.dp)
     Box(
-        modifier = Modifier
-            .size(width = 196.dp, height = 132.dp)
+        modifier = modifier
+            .aspectRatio(1.4f)
             .bounceClick(0.95f, onClick = onClick)
             .clip(shape)
             .background(look.tint.copy(alpha = 0.13f))
             .border(0.5.dp, look.tint.copy(alpha = 0.35f), shape)
     ) {
-        if (img != null) {
+        if (img != null && blobId != null) {
             // A card's picture is front above back, so the tile shows the front.
             Image(img, slot.label, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))))
-                    .padding(start = 12.dp, end = 12.dp, top = 22.dp, bottom = 10.dp)
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.72f))))
+                    .padding(start = 10.dp, end = 10.dp, top = 20.dp, bottom = 9.dp)
             ) {
-                Icon(look.icon, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Icon(look.icon, null, tint = Color.White, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(slot.label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1)
+                Text(slot.label, style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            if (actions) Row(Modifier.align(Alignment.TopEnd).padding(7.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                MiniAction(Icons.Rounded.Share, "Share ${slot.label}") {
+                    Pin.awayOnPurpose = true
+                    scope.launch { runCatching { Media.share(context, blobId, fileName, "image/jpeg") }.onFailure { toast(context, "Couldn't share") } }
+                }
+                MiniAction(Icons.Rounded.ArrowDownward, "Download ${slot.label}") {
+                    scope.launch { runCatching { Media.saveToPhone(blobId, fileName, "image/jpeg") }.onSuccess { toast(context, it) }.onFailure { toast(context, it.message ?: "Couldn't save") } }
+                }
             }
         } else {
-            Column(Modifier.fillMaxSize().padding(14.dp)) {
+            Column(Modifier.fillMaxSize().padding(12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBubble(look.icon, size = 40.dp, iconSize = 21.dp, background = look.tint, tint = Color.White)
+                    IconBubble(look.icon, size = 34.dp, iconSize = 18.dp, background = look.tint, tint = Color.White)
                     Spacer(Modifier.weight(1f))
-                    if (busy || blobId != null) CircularProgressIndicator(strokeWidth = 2.dp, color = look.tint, modifier = Modifier.size(20.dp))
-                    else Icon(Icons.Rounded.DocumentScanner, null, tint = look.tint, modifier = Modifier.size(20.dp))
+                    if (busy || blobId != null) CircularProgressIndicator(strokeWidth = 2.dp, color = look.tint, modifier = Modifier.size(18.dp))
+                    else Icon(Icons.Rounded.DocumentScanner, null, tint = look.tint, modifier = Modifier.size(18.dp))
                 }
                 Spacer(Modifier.weight(1f))
-                Text(slot.label, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1)
-                Text(look.hint, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1)
+                Text(slot.label, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(look.hint, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         if (onRemove != null) Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).size(28.dp)
+            modifier = Modifier.align(Alignment.TopEnd).padding(7.dp).size(28.dp)
                 .bounceClick(0.85f, onClick = onRemove)
                 .background(scheme.surface, CircleShape)
         ) { Icon(Icons.Rounded.Close, "Remove ${slot.label}", tint = scheme.onSurface, modifier = Modifier.size(15.dp)) }

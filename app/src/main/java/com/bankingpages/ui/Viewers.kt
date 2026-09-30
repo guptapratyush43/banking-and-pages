@@ -29,10 +29,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.NoteAdd
-import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -133,8 +133,8 @@ private fun ActionBar(onSave: () -> Unit, onShare: () -> Unit, saveLabel: String
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxWidth().background(scheme.background).padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
-        SecondaryButton(saveLabel, Icons.Outlined.Download, onSave, Modifier.weight(1f))
-        PrimaryButton("Share", Icons.Outlined.Share, onShare, Modifier.weight(1f))
+        SecondaryButton(saveLabel, Icons.Rounded.ArrowDownward, onSave, Modifier.weight(1f))
+        PrimaryButton("Share", Icons.Rounded.Share, onShare, Modifier.weight(1f))
     }
 }
 
@@ -147,7 +147,7 @@ fun PhotoViewer(title: String, subtitle: String, blobId: String, fileName: Strin
     val img = rememberPhoto(blobId, 2600)
     Column(Modifier.fillMaxSize().background(scheme.background)) {
         TopBar(title, onBack, subtitle = subtitle)
-        Box(Modifier.weight(1f).fillMaxWidth().padding(12.dp).clip(RoundedCornerShape(24.dp)).background(scheme.surfaceVariant), contentAlignment = Alignment.Center) {
+        Box(Modifier.weight(1f).fillMaxWidth().padding(12.dp).clip(RoundedCornerShape(18.dp)).background(scheme.surfaceVariant), contentAlignment = Alignment.Center) {
             if (img != null) ZoomImage(img, title) else CircularProgressIndicator(strokeWidth = 2.dp, color = scheme.primary, modifier = Modifier.size(26.dp))
         }
         ActionBar(
@@ -177,7 +177,8 @@ fun DocViewer(doc: Doc, onBack: () -> Unit, onDelete: () -> Unit) {
             }
             LazyColumn(
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                // A short document sits in the middle of the screen rather than hugging the top.
+                verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
                 modifier = Modifier.weight(1f)
             ) {
                 doc.password?.let { pw ->
@@ -225,7 +226,7 @@ fun DocViewer(doc: Doc, onBack: () -> Unit, onDelete: () -> Unit) {
             icon = Icons.Outlined.DeleteOutline, accent = LocalStatusColors.current.danger, title = "Delete ${doc.title}?",
             confirmLabel = "Delete", onConfirm = { confirmDelete = false; onDelete() },
             dismissLabel = "Keep", onDismiss = { confirmDelete = false }
-        ) { DialogText("The file is removed from Banking Pages. Copies you saved to the phone stay.") }
+        ) { DialogText("The file is removed from Banking and Pages. Copies you saved to the phone stay.") }
 
         zoomPage?.let { p ->
             androidx.activity.compose.BackHandler { zoomPage = null }

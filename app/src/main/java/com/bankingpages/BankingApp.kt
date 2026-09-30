@@ -25,5 +25,7 @@ class BankingApp : Application() {
         Media.init(this)
         LogoStore.init(this)
         BackupManager.init(this)
+        com.bankingpages.update.UpdateManager.init(this)
+        com.bankingpages.update.UpdateWorker.schedule(this)
     }
 }

@@ -81,7 +81,7 @@ fun BankPickerScreen(onBack: () -> Unit, onPick: (PickedBank) -> Unit) {
         ) {
             item(key = "other") {
                 WarmCard(
-                    borderColor = scheme.primary.copy(alpha = 0.4f), padding = 14.dp, radius = 20.dp, elevation = 6.dp,
+                    borderColor = scheme.primary.copy(alpha = 0.4f), padding = 14.dp, radius = 16.dp, elevation = 0.dp,
                     onClick = { addOther = true }, modifier = Modifier.entrance(0, "other", seen)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -100,8 +100,8 @@ fun BankPickerScreen(onBack: () -> Unit, onPick: (PickedBank) -> Unit) {
                 item(key = "h-$category") { SectionLabel(category, Modifier.padding(top = 10.dp)) }
                 val base = index
                 index += banks.size
-                itemsIndexed(banks, key = { _, b -> b.id }) { i, b ->
-                    BankRow(b, Modifier.entrance(base + i, b.id, seen)) { onPick(PickedBank(b.id, b.name, b.domain)) }
+                itemsIndexed(banks, key = { _, b -> b.id }, contentType = { _, _ -> "bank" }) { i, b ->
+                    BankRow(b, Modifier) { onPick(PickedBank(b.id, b.name, b.domain)) }
                 }
             }
             if (results.isEmpty()) item(key = "none") {
@@ -138,7 +138,7 @@ fun BankPickerScreen(onBack: () -> Unit, onPick: (PickedBank) -> Unit) {
 @Composable
 private fun BankRow(b: Bank, modifier: Modifier, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    WarmCard(padding = 12.dp, radius = 20.dp, elevation = 6.dp, onClick = onClick, modifier = modifier) {
+    WarmCard(padding = 12.dp, radius = 16.dp, elevation = 0.dp, onClick = onClick, modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             BankLogo(b.id, b.name, 40.dp)
             Spacer(Modifier.width(14.dp))

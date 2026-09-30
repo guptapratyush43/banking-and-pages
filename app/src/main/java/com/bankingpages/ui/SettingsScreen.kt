@@ -43,9 +43,9 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Password
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.ScreenLockPortrait
+import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -66,15 +66,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.bankingpages.AppScope
 import com.bankingpages.backup.BackupManager
 import com.bankingpages.backup.DriveAuth
 import com.bankingpages.backup.WrongPasswordException
 import com.bankingpages.data.AppSettings
 import com.bankingpages.data.Pin
-import com.bankingpages.logo.LogoWorker
 import com.bankingpages.ui.motion.Motion
 import com.bankingpages.ui.motion.bounceClick
 import com.bankingpages.ui.motion.entrance
@@ -101,7 +98,7 @@ fun askFingerprint(activity: FragmentActivity, title: String, onOk: () -> Unit) 
     prompt.authenticate(
         BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
-            .setSubtitle("Banking Pages")
+            .setSubtitle("Banking and Pages")
             .setNegativeButtonText("Use PIN")
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
             .build()
@@ -125,9 +122,16 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
 
     Box(Modifier.fillMaxSize().background(scheme.background)) {
         Column(Modifier.fillMaxSize()) {
-            TopBar("Profile", null, subtitle = "Security, backup and logos")
+            TopBar("Profile", null, subtitle = "Backup, security and updates")
             Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(top = 14.dp, bottom = 130.dp)) {
-                Column(Modifier.entrance(0, "sec", seen)) {
+                Column(Modifier.entrance(0, "backup", seen)) {
+                    SectionLabel("Backup")
+                    BackupSection()
+                }
+
+
+                Spacer(Modifier.height(24.dp))
+                Column(Modifier.entrance(1, "sec", seen)) {
                     SectionLabel("Security")
                     WarmCard {
                         SettingRow(Icons.Outlined.Password, "Change PIN", "The 4 digits you open the app with", onClick = { changePin = true })
@@ -138,7 +142,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                                 else when (fingerprintStatus(context)) {
                                     BiometricManager.BIOMETRIC_SUCCESS -> fingerprintWarning = true
                                     BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> toast(context, "Add a fingerprint in your phone's settings first")
-                                    else -> toast(context, "This phone has no fingerprint sensor Banking Pages can use")
+                                    else -> toast(context, "This phone has no fingerprint sensor Banking and Pages can use")
                                 }
                             })
                         }
@@ -152,19 +156,21 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                     }
                 }
 
-                Spacer(Modifier.height(24.dp))
-                Column(Modifier.entrance(1, "backup", seen)) {
-                    SectionLabel("Backup")
-                    BackupSection()
-                }
 
                 Spacer(Modifier.height(24.dp))
-                Column(Modifier.entrance(2, "logos", seen)) {
-                    SectionLabel("Bank logos")
+                Column(Modifier.entrance(2, "update", seen)) {
+                    SectionLabel("App")
                     WarmCard {
-                        SettingRow(Icons.Outlined.Refresh, "Check logos now", "Logos also refresh by themselves once a day, quietly, whenever a bank changes its look", onClick = {
-                            WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<LogoWorker>().build())
-                            toast(context, "Checking your banks' logos")
+                        var checking by remember { mutableStateOf(false) }
+                        SettingRow(Icons.Outlined.SystemUpdate, "Check for updates", if (checking) "Checking…" else "You're on v$version", onClick = {
+                            if (!checking) {
+                                checking = true
+                                AppScope.launch {
+                                    try { if (com.bankingpages.update.UpdateManager.checkNow() == null) toast(context, "You're on the latest version") }
+                                    catch (e: Exception) { toast(context, "Couldn't check right now. Try again in a bit.") }
+                                    finally { checking = false }
+                                }
+                            }
                         })
                     }
                 }
@@ -173,7 +179,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().entrance(3, "about", seen).padding(horizontal = 4.dp)) {
                     Icon(Icons.Outlined.Info, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Banking Pages $version · everything is encrypted on this phone", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    Text("Banking and Pages $version · everything is encrypted on this phone", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
             }
         }
@@ -199,7 +205,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
             },
             dismissLabel = "PIN only", onDismiss = { fingerprintWarning = false }
         ) {
-            DialogText("Fingerprint unlock is handy, but it's less private than your PIN. While you're asleep or not looking, someone could press your finger to the phone and open Banking Pages. A PIN in your head can't be borrowed that way.")
+            DialogText("Fingerprint unlock is handy, but it's less private than your PIN. While you're asleep or not looking, someone could press your finger to the phone and open Banking and Pages. A PIN in your head can't be borrowed that way.")
         }
     }
 }
@@ -333,7 +339,7 @@ fun BackupSection() {
             }
             Spacer(Modifier.height(12.dp))
             Text(
-                "Your banks, photos and documents, saved to a hidden spot in your own Drive and locked with your PIN. New phone? Restore in a tap.",
+                "Your bank details, photos and documents are saved to the Google Drive of the account you sign in with.",
                 style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant
             )
             Spacer(Modifier.height(14.dp))
@@ -374,7 +380,7 @@ fun BackupSection() {
                 }, Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
-            Footnote("Auto-backup is on: every change syncs a few seconds later.")
+            Footnote("Everything backs up the moment you add or change it.")
         }
     }
 

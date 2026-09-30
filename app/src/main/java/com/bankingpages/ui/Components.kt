@@ -76,7 +76,7 @@ fun toast(context: Context, msg: String) {
 }
 
 /** One shape and one height for every full-size button, so they line up wherever they sit. */
-val Pill = RoundedCornerShape(50)
+val Pill = RoundedCornerShape(14.dp)
 private val ButtonHeight = 52.dp
 
 /** The soft, wide shadow that lifts cards and round buttons off the page. */
@@ -96,7 +96,7 @@ fun WarmCard(
     background: Color = MaterialTheme.colorScheme.surface,
     borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f),
     padding: Dp = 18.dp,
-    radius: Dp = 24.dp,
+    radius: Dp = 18.dp,
     elevation: Dp = 14.dp,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
@@ -137,10 +137,19 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier) {
 fun SectionHeader(title: String, count: Int, modifier: Modifier = Modifier, action: @Composable () -> Unit) {
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
-            Spacer(Modifier.width(10.dp))
-            if (count > 0) Tag("$count")
-            Spacer(Modifier.weight(1f))
+            // The count sits right beside the word, level with its letters.
+            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
+                if (count > 0) {
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.padding(top = 1.dp).heightIn(min = 22.dp).background(MaterialTheme.colorScheme.primary, CircleShape).padding(horizontal = 8.dp)
+                    ) {
+                        Text("$count", style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp, lineHeight = 14.sp), color = Color.White)
+                    }
+                }
+            }
             action()
         }
         Spacer(Modifier.height(12.dp))
@@ -305,6 +314,7 @@ fun WarmField(
     visual: VisualTransformation = VisualTransformation.None,
     supporting: String? = null,
     isError: Boolean = false,
+    leading: ImageVector? = null,
     trailing: (@Composable () -> Unit)? = null
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -312,7 +322,7 @@ fun WarmField(
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val ring by animateColorAsState(if (isError) danger else if (focused) scheme.primary else Color.Transparent, label = "fieldRing")
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(14.dp)
     Column(modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -321,23 +331,38 @@ fun WarmField(
                 .clip(shape)
                 .background(scheme.surfaceVariant)
                 .border(1.5.dp, ring, shape)
-                .heightIn(min = 58.dp)
+                .heightIn(min = 54.dp)
                 .padding(start = 16.dp, end = if (trailing != null) 6.dp else 16.dp, top = 9.dp, bottom = 10.dp)
         ) {
+            if (leading != null) {
+                val tint by animateColorAsState(if (focused) scheme.primary else scheme.onSurfaceVariant, label = "fieldIcon")
+                Icon(leading, null, tint = tint, modifier = Modifier.size(21.dp))
+                Spacer(Modifier.width(13.dp))
+            }
             Column(Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.labelSmall, color = if (isError) danger else if (focused) scheme.primary else scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.height(2.dp))
+                // With nothing typed the label rests in the middle as a hint; it moves up once there is text or focus.
+                val raised = focused || value.isNotEmpty()
+                if (raised) {
+                    Text(label, style = MaterialTheme.typography.labelSmall, color = if (isError) danger else if (focused) scheme.primary else scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.height(2.dp))
+                }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = scheme.onSurface),
                     singleLine = singleLine,
-                    minLines = minLines,
+                    minLines = if (raised) minLines else 1,
                     keyboardOptions = keyboard,
                     visualTransformation = visual,
                     interactionSource = source,
                     cursorBrush = SolidColor(scheme.primary),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    decorationBox = { inner ->
+                        Box(contentAlignment = Alignment.CenterStart) {
+                            if (!raised) Text(label, style = MaterialTheme.typography.bodyLarge, color = if (isError) danger else scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            inner()
+                        }
+                    }
                 )
             }
             trailing?.invoke()
@@ -359,7 +384,7 @@ fun WarmSwitch(checked: Boolean, onChange: (Boolean) -> Unit, enabled: Boolean =
     Box(
         Modifier
             .size(54.dp, 32.dp)
-            .clip(Pill)
+            .clip(CircleShape)
             .background(track)
             .clickable(remember { MutableInteractionSource() }, indication = null, enabled = enabled) {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onChange(!checked)
@@ -392,7 +417,7 @@ fun WarmMenu(expanded: Boolean, onDismiss: () -> Unit, content: @Composable Colu
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(14.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 16.dp,
@@ -433,8 +458,8 @@ fun WarmDialog(
                 .padding(horizontal = 22.dp)
                 .graphicsLayer { scaleX = pop.value; scaleY = pop.value }
                 .fillMaxWidth()
-                .background(scheme.surface, RoundedCornerShape(32.dp))
-                .border(0.5.dp, scheme.outline, RoundedCornerShape(32.dp))
+                .background(scheme.surface, RoundedCornerShape(22.dp))
+                .border(0.5.dp, scheme.outline, RoundedCornerShape(22.dp))
                 .padding(22.dp)
         ) {
             IconBubble(icon, size = 60.dp, iconSize = 28.dp, background = accent.copy(alpha = 0.12f), tint = accent)
@@ -469,5 +494,31 @@ fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
             .padding(horizontal = 15.dp, vertical = 9.dp)
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp), color = if (selected) Color.White else scheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * A solid little button that lives inside a card. [filled] is the accent gradient
+ * with a white icon (the main action); otherwise a quiet block with a dark icon.
+ */
+@Composable
+fun CardAction(icon: ImageVector, description: String, onClick: () -> Unit, modifier: Modifier = Modifier, label: String? = null, filled: Boolean = true) {
+    val scheme = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(12.dp)
+    val content = if (filled) Color.White else scheme.onSurface
+    Row(
+        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .bounceClick(0.9f, onClick = onClick)
+            .clip(shape)
+            .background(if (filled) AccentBrush else SolidColor(scheme.surfaceVariant))
+            .height(38.dp)
+            .padding(horizontal = 10.dp)
+    ) {
+        Icon(icon, description, tint = content, modifier = Modifier.size(18.dp))
+        if (label != null) {
+            Spacer(Modifier.width(7.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp), color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
     }
 }

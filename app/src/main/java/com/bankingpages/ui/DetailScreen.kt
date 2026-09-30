@@ -28,7 +28,7 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.IosShare
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -102,29 +102,29 @@ fun DetailScreen(a: Account, onBack: () -> Unit, onEdit: () -> Unit, onDelete: (
                     Field("Account holder", a.holder)
                     Field("Account number", a.number, mono = true)
                     Field("IFSC code", a.ifsc, mono = true)
-                    Field("Branch", a.branch)
-                    Field("Branch address", a.branchAddress)
+                    Field("Account type", a.type)
+                    Field("Branch", a.branchLine)
                     Field("Registered mobile", a.mobile)
                     Field("Registered email", a.email)
                     Field("Customer ID / CIF", a.customerId, mono = true)
                     Field("MICR", a.micr, mono = true)
-                    Field("UPI ID", a.upi)
                     Spacer(Modifier.height(6.dp))
                 }
                 Spacer(Modifier.height(14.dp))
                 PrimaryButton(
-                    "Share account details", Icons.Rounded.IosShare,
+                    "Share account details", Icons.Rounded.Share,
                     { Pin.awayOnPurpose = true; Media.shareText(context, a.shareText(), "Share ${a.bankName} details") },
                     Modifier.fillMaxWidth().entrance(3, "share", seen)
                 )
-                Footnote("Copy and Share send the name, account number, IFSC, branch, address and phone. Never passwords.", Modifier.padding(top = 10.dp).entrance(3, "sharenote", seen))
+                Footnote("Copy and Share send the name, account number, IFSC, account type, branch and registered mobile. Never passwords.", Modifier.padding(top = 10.dp).entrance(3, "sharenote", seen))
             }
 
             Spacer(Modifier.height(26.dp))
-            Column(Modifier.entrance(4, "photos", seen)) {
-                SectionLabel("Cheque, passbook and cards", Modifier.padding(start = 20.dp))
-                PhotoStrip(
+            Column(Modifier.padding(horizontal = 20.dp).entrance(4, "photos", seen)) {
+                SectionLabel("Documents")
+                PhotoGrid(
                     photos = a.photos,
+                    fileLabel = a.bankName,
                     onOpen = onOpenPhoto,
                     onAdd = { slot, uris ->
                         busySlot = slot
@@ -137,7 +137,7 @@ fun DetailScreen(a: Account, onBack: () -> Unit, onEdit: () -> Unit, onDelete: (
                     },
                     onRemove = null,
                     busySlot = busySlot,
-                    edgePadding = 20.dp
+                    actions = true
                 )
             }
 

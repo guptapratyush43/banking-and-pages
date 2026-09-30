@@ -1,7 +1,5 @@
 package com.bankingpages.ui
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,7 +46,7 @@ fun BankLogo(key: String, name: String, size: Dp, modifier: Modifier = Modifier)
             .background(if (logo != null) (if (dark) Color(0xFFF7F5EF) else Color.White) else scheme.primaryContainer, CircleShape)
             .border(0.5.dp, scheme.outline, CircleShape)
     ) {
-        Crossfade(logo, animationSpec = tween(260), label = "logo") { img ->
+        logo.let { img ->
             if (img != null) {
                 Image(
                     bitmap = img,

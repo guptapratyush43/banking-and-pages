@@ -336,7 +336,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             1 -> PinPanel(
                 icon = Icons.Outlined.Lock,
                 title = "Create your PIN",
-                subtitle = "You'll use these 4 digits every time you open Banking Pages",
+                subtitle = "You'll use these 4 digits every time you open Banking and Pages",
                 onComplete = { pin -> first = pin; step = 2; true },
                 footer = { Text("Don't use your ATM or UPI PIN", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
             )

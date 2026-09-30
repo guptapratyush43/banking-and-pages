@@ -33,11 +33,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DocumentScanner
-import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.DragIndicator
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.Image
-import androidx.compose.material.icons.rounded.IosShare
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material3.Icon
@@ -123,7 +123,7 @@ fun HomeScreen(
                 style = MaterialTheme.typography.labelSmall, color = scheme.primary
             )
             Spacer(Modifier.height(4.dp))
-            Text("Banking Pages", style = MaterialTheme.typography.displaySmall, color = scheme.onBackground)
+            Text("Banking and Pages", style = MaterialTheme.typography.displaySmall, color = scheme.onBackground)
         }
 
         Spacer(Modifier.height(28.dp))
@@ -202,12 +202,12 @@ private fun DocCard(d: Doc, dragging: Boolean, onOpen: () -> Unit, modifier: Mod
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val preview by produceState<ImageBitmap?>(null, d.blobId) { value = Media.renderPage(d, 0, 420) }
-    Column(modifier.width(150.dp).lifted(dragging), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier.width(156.dp).lifted(dragging), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(contentAlignment = Alignment.TopCenter) {
-            WarmCard(padding = 8.dp, radius = 24.dp, onClick = onOpen) {
+            WarmCard(padding = 8.dp, onClick = onOpen) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(0.82f).clip(RoundedCornerShape(17.dp)).background(scheme.surfaceVariant)
+                    modifier = Modifier.fillMaxWidth().aspectRatio(0.82f).clip(RoundedCornerShape(12.dp)).background(scheme.surfaceVariant)
                 ) {
                     val img = preview
                     if (img != null) Image(img, null, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
@@ -220,19 +220,19 @@ private fun DocCard(d: Doc, dragging: Boolean, onOpen: () -> Unit, modifier: Mod
                 Spacer(Modifier.height(9.dp))
                 Text(d.title, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp))
                 Spacer(Modifier.height(5.dp))
-                Tag(if (d.isPdf) "PDF" else "Photo", Modifier.padding(start = 4.dp, bottom = 4.dp))
+                Tag(if (d.isPdf) "PDF" else "Photo", Modifier.padding(start = 4.dp))
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CardAction(Icons.Rounded.Share, "Share ${d.title}", {
+                        Pin.awayOnPurpose = true
+                        scope.launch { runCatching { Media.share(context, d.blobId, d.fileName, d.mime) }.onFailure { toast(context, "Couldn't share") } }
+                    }, Modifier.weight(1f))
+                    CardAction(Icons.Rounded.ArrowDownward, "Download ${d.title}", filled = false, onClick = {
+                        scope.launch { runCatching { Media.saveToPhone(d.blobId, d.fileName, d.mime) }.onSuccess { toast(context, it) }.onFailure { toast(context, it.message ?: "Couldn't save") } }
+                    }, modifier = Modifier.weight(1f))
+                }
             }
             DragBadge(dragging, Modifier.padding(top = 14.dp))
-        }
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            RoundIcon(Icons.Rounded.IosShare, "Share ${d.title}", {
-                Pin.awayOnPurpose = true
-                scope.launch { runCatching { Media.share(context, d.blobId, d.fileName, d.mime) }.onFailure { toast(context, "Couldn't share") } }
-            }, tint = scheme.primary, size = 42.dp)
-            RoundIcon(Icons.Rounded.Download, "Download ${d.title}", {
-                scope.launch { runCatching { Media.saveToPhone(d.blobId, d.fileName, d.mime) }.onSuccess { toast(context, it) }.onFailure { toast(context, it.message ?: "Couldn't save") } }
-            }, tint = scheme.primary, size = 42.dp)
         }
     }
 }
@@ -266,9 +266,9 @@ private fun BanksRow(accounts: List<Account>, seen: MutableSet<Any>, onOpen: (Ac
 private fun BankCard(a: Account, dragging: Boolean, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
-    Column(modifier.width(176.dp).lifted(dragging)) {
+    Column(modifier.width(184.dp).lifted(dragging)) {
         Box(contentAlignment = Alignment.TopCenter) {
-            WarmCard(padding = 16.dp, radius = 24.dp, onClick = onOpen) {
+            WarmCard(padding = 16.dp, onClick = onOpen) {
                 Row(verticalAlignment = Alignment.Top) {
                     BankLogo(a.bankId, a.bankName, 56.dp)
                     Spacer(Modifier.weight(1f))
@@ -290,14 +290,14 @@ private fun BankCard(a: Account, dragging: Boolean, onOpen: () -> Unit, modifier
                 )
                 Spacer(Modifier.height(10.dp))
                 Tag(a.type.ifBlank { "Account" })
+                Spacer(Modifier.height(12.dp))
+                CardAction(Icons.Rounded.Share, "Share account details only", {
+                    Pin.awayOnPurpose = true
+                    Media.shareText(context, a.shareText(), "Share ${a.bankName} details")
+                }, Modifier.fillMaxWidth(), label = "Share A/C details")
             }
             DragBadge(dragging, Modifier.padding(top = 6.dp))
         }
-        Spacer(Modifier.height(12.dp))
-        SmallButton("Share A/C details", Icons.Rounded.IosShare, {
-            Pin.awayOnPurpose = true
-            Media.shareText(context, a.shareText(), "Share ${a.bankName} details")
-        }, Modifier.fillMaxWidth())
     }
 }
 
@@ -305,7 +305,7 @@ private fun BankCard(a: Account, dragging: Boolean, onOpen: () -> Unit, modifier
 @Composable
 private fun EmptyCard(icon: ImageVector, title: String, body: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(24.dp)
+    val shape = RoundedCornerShape(18.dp)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier

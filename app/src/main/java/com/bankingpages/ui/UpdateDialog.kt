@@ -1,0 +1,122 @@
+package com.bankingpages.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.SystemUpdate
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bankingpages.AppScope
+import com.bankingpages.data.Pin
+import com.bankingpages.ui.theme.AccentBrush
+import com.bankingpages.ui.theme.LocalStatusColors
+import com.bankingpages.update.UpdateManager
+import com.bankingpages.update.UpdateManager.Download
+import kotlinx.coroutines.launch
+
+/**
+ * "A new version is available": Update downloads it in the app and opens
+ * Android's installer; Ignore hides this version for good.
+ */
+@Composable
+fun UpdateDialog(release: UpdateManager.Release) {
+    val context = LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val download by UpdateManager.download.collectAsStateWithLifecycle()
+    val running = download is Download.Running
+    val verifying by UpdateManager.verifying.collectAsStateWithLifecycle()
+    Dialog(onDismissRequest = { if (!running) UpdateManager.close() }, properties = DialogProperties(dismissOnClickOutside = !running)) {
+        WarmCard(padding = 22.dp, radius = 22.dp) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                IconBubble(Icons.Rounded.SystemUpdate, size = 64.dp, iconSize = 30.dp)
+                Spacer(Modifier.height(14.dp))
+                Text("Banking and Pages v${release.version} is here", style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(4.dp))
+                Text("You have v${UpdateManager.currentVersion}", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+            }
+            if (verifying) {
+                // Making sure this is the newest release before offering it.
+                Spacer(Modifier.height(18.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    CircularProgressIndicator(Modifier.size(26.dp), strokeWidth = 2.5.dp, color = scheme.primary)
+                    Spacer(Modifier.height(10.dp))
+                    Text("Checking for the latest version…", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                }
+                return@WarmCard
+            }
+            if (release.notes.isNotBlank()) {
+                Spacer(Modifier.height(14.dp))
+                Box(
+                    Modifier.fillMaxWidth().heightIn(max = 200.dp).clip(RoundedCornerShape(14.dp))
+                        .background(scheme.surfaceVariant).verticalScroll(rememberScrollState())
+                ) {
+                    Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                        Text("What's new", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = scheme.onSurface)
+                        Spacer(Modifier.height(16.dp))
+                        // Lines that aren't bullets are section headings: "New features", "Improved", "Fixes".
+                        val body = buildAnnotatedString {
+                            release.notes.lines().filter { it.isNotBlank() }.forEachIndexed { i, line ->
+                                val t = line.trimStart()
+                                val heading = !t.startsWith("•") && !t.startsWith("-") && !t.startsWith("*")
+                                if (i > 0) append("\n")
+                                if (heading && i > 0) append("\n")
+                                if (heading) withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(line.trim()) } else append(line)
+                            }
+                        }
+                        Text(body, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface)
+                    }
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+            when (val d = download) {
+                is Download.Running -> {
+                    Text(d.progress?.let { "Downloading… ${(it * 100).toInt()}%" } ?: "Downloading…", style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                    Spacer(Modifier.height(8.dp))
+                    Box(Modifier.fillMaxWidth().height(8.dp).clip(Pill).background(scheme.surfaceVariant)) {
+                        Box(Modifier.fillMaxWidth(d.progress ?: 0.1f).height(8.dp).clip(Pill).background(AccentBrush))
+                    }
+                }
+                // Going to Android's installer isn't leaving the app: don't ask for the PIN on the way back.
+                is Download.Ready -> PrimaryButton("Install", null, { Pin.awayOnPurpose = true; UpdateManager.install(context, d.file) }, Modifier.fillMaxWidth())
+                else -> {
+                    if (d is Download.Failed) {
+                        Text(d.message, style = MaterialTheme.typography.bodySmall, color = LocalStatusColors.current.danger)
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                        SecondaryButton("Ignore", null, { UpdateManager.ignore(release) }, Modifier.weight(1f), tint = scheme.onSurface)
+                        PrimaryButton("Update", null, { AppScope.launch { UpdateManager.startDownload(release) } }, Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}

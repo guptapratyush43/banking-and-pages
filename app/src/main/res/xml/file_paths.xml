@@ -3,4 +3,6 @@
     <!-- Short-lived decrypted copies for sharing, and the camera's capture file. Both are wiped on launch. -->
     <cache-path name="share" path="share/" />
     <cache-path name="camera" path="camera/" />
+    <!-- Downloaded update APKs, handed to Android's installer. -->
+    <cache-path name="updates" path="updates/" />
 </paths>

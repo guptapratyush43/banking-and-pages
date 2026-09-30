@@ -14,8 +14,8 @@ android {
         applicationId = "com.bankingpages"
         minSdk = 29
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.6"
+        versionCode = 13
+        versionName = "2.2"
     }
 
     // One key (in signing/, git-ignored) signs debug and release alike, so the SHA-1
@@ -50,6 +50,11 @@ android {
 
     packaging {
         resources.excludes += setOf("META-INF/{AL2.0,LGPL2.1}", "META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*")
+    }
+
+    // The release variant is what goes on the phone (far smoother than debug); lint has a known crash on it.
+    lint {
+        checkReleaseBuilds = false
     }
 
     buildFeatures {

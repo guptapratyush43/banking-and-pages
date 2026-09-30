@@ -4,12 +4,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 enum class PhotoSlot(val label: String) {
-    CHEQUE("Cancelled cheque"),
-    PASSBOOK("Passbook front page"),
-    DEBIT_FRONT("Debit card"),
-    DEBIT_BACK("Debit card (back)"),
-    CREDIT_FRONT("Credit card"),
-    CREDIT_BACK("Credit card (back)");
+    CHEQUE("Cancelled Cheque"),
+    PASSBOOK("Passbook Front Page"),
+    DEBIT_FRONT("Debit Card"),
+    DEBIT_BACK("Debit Card (Back)"),
+    CREDIT_FRONT("Credit Card"),
+    CREDIT_BACK("Credit Card (Back)");
 
     /** Front and back sit together in one picture; the BACK slots only hold older, separate photos. */
     val isCard get() = this == DEBIT_FRONT || this == CREDIT_FRONT
@@ -48,15 +48,18 @@ data class Account(
 ) {
     val maskedNumber: String get() = if (number.length >= 4) "•• " + number.takeLast(4) else number
 
+    /** Branch name and its address as one line. */
+    val branchLine: String get() = listOf(branch, branchAddress).filter { it.isNotBlank() }.joinToString(", ")
+
     /** The one-tap share text: what someone needs to send you money. */
     fun shareText(): String = buildList {
         add(bankName)
         if (holder.isNotBlank()) add("Account holder: $holder")
         if (number.isNotBlank()) add("Account number: $number")
         if (ifsc.isNotBlank()) add("IFSC: $ifsc")
-        if (branch.isNotBlank()) add("Branch: $branch")
-        if (branchAddress.isNotBlank()) add("Branch address: $branchAddress")
-        if (mobile.isNotBlank()) add("Phone: $mobile")
+        if (type.isNotBlank()) add("Account type: $type")
+        if (branchLine.isNotBlank()) add("Branch: $branchLine")
+        if (mobile.isNotBlank()) add("Registered mobile: $mobile")
     }.joinToString("\n")
 
     fun toJson(): JSONObject = JSONObject()
