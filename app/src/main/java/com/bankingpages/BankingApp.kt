@@ -21,6 +21,7 @@ class BankingApp : Application() {
         BankCatalog.init(this)
         AppSettings.init(this)
         Pin.init(this)
+        com.bankingpages.data.Recovery.init(this)
         Vault.init(this)
         Media.init(this)
         LogoStore.init(this)

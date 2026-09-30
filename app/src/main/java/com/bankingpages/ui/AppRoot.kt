@@ -317,7 +317,7 @@ private fun eraseEverything(context: Context) {
     val app = context.applicationContext
     File(app.filesDir, "vault").deleteRecursively()
     File(app.filesDir, "logos").deleteRecursively()
-    listOf("pin", "settings", "backup", "logos").forEach { app.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
+    listOf("pin", "recovery", "settings", "backup", "logos", "pagecounts").forEach { app.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().commit() }
     val restart = app.packageManager.getLaunchIntentForPackage(app.packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
     app.startActivity(restart)
     (context as? Activity)?.finishAffinity()

@@ -1,5 +1,6 @@
 package com.bankingpages.ui
 
+import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.VisibilityThreshold
 import android.app.Activity
@@ -114,8 +115,10 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
     val warning = LocalStatusColors.current.warning
     val settings by AppSettings.state.collectAsStateWithLifecycle()
     var changePin by rememberSaveable { mutableStateOf(false) }
-    // The floating bar steps aside while the PIN pad is up.
-    androidx.compose.runtime.LaunchedEffect(changePin) { onOverlay(changePin) }
+    var recoveryFlow by rememberSaveable { mutableStateOf(false) }
+    // The floating bar steps aside while a PIN pad is up.
+    androidx.compose.runtime.LaunchedEffect(changePin, recoveryFlow) { onOverlay(changePin || recoveryFlow) }
+    val hasRecovery = remember(recoveryFlow) { com.bankingpages.data.Recovery.isSet }
     var fingerprintWarning by remember { mutableStateOf(false) }
     val seen = remember { mutableSetOf<Any>() }
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "" }
@@ -134,6 +137,12 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                     SectionLabel("Security")
                     WarmCard {
                         SettingRow(Icons.Outlined.Password, "Change PIN", "The 4 digits you open the app with", onClick = { changePin = true })
+                        Divider()
+                        SettingRow(
+                            Icons.Outlined.Badge, "Aadhaar for PIN reset",
+                            if (hasRecovery) "Added. Lets you set a new PIN if you forget it" else "Not added. Add it so a forgotten PIN can be reset",
+                            onClick = { recoveryFlow = true }
+                        )
                         Divider()
                         SettingRow(Icons.Outlined.Fingerprint, "Unlock with fingerprint", "Quicker than typing your PIN") {
                             WarmSwitch(settings.fingerprint, { on ->
@@ -189,6 +198,15 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
         ) {
             BackHandler { changePin = false }
             ChangePinFlow { ok -> changePin = false; if (ok) toast(context, "PIN changed") }
+        }
+
+        AnimatedVisibility(
+            recoveryFlow,
+            enter = slideInHorizontally(Motion.push(androidx.compose.ui.unit.IntOffset.VisibilityThreshold)) { it },
+            exit = slideOutHorizontally(Motion.push(androidx.compose.ui.unit.IntOffset.VisibilityThreshold)) { it }
+        ) {
+            BackHandler { recoveryFlow = false }
+            RecoveryFlow { saved -> recoveryFlow = false; if (saved) toast(context, "Aadhaar number saved for PIN reset") }
         }
     }
 

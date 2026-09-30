@@ -44,16 +44,21 @@ object Pin {
         val stored = Crypto.decrypt(Base64.decode(prefs.getString("hash", null) ?: return false, Base64.NO_WRAP))
         val ok = MessageDigest.isEqual(stored, hash(pin, salt))
         if (ok) {
-            prefs.edit().remove("fails").remove("until").apply()
+            clearFailures()
             _unlocked.value = true
-        } else {
-            val fails = prefs.getInt("fails", 0) + 1
-            val edit = prefs.edit().putInt("fails", fails)
-            if (fails >= 5) edit.putLong("until", System.currentTimeMillis() + 30_000L * (1 shl (fails - 5).coerceAtMost(6)))
-            edit.apply()
-        }
+        } else registerFailure()
         return ok
     }
+
+    /** A wrong PIN or a wrong Aadhaar number: both count, so neither can be guessed at speed. */
+    fun registerFailure() {
+        val fails = prefs.getInt("fails", 0) + 1
+        val edit = prefs.edit().putInt("fails", fails)
+        if (fails >= 5) edit.putLong("until", System.currentTimeMillis() + 30_000L * (1 shl (fails - 5).coerceAtMost(6)))
+        edit.apply()
+    }
+
+    fun clearFailures() { prefs.edit().remove("fails").remove("until").apply() }
 
     /** Milliseconds until the pad accepts tries again; 0 when it does. */
     fun waitMillis(): Long = (prefs.getLong("until", 0L) - System.currentTimeMillis()).coerceAtLeast(0L)

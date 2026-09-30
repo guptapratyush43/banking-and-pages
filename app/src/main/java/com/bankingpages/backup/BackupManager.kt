@@ -1,5 +1,6 @@
 package com.bankingpages.backup
 
+import com.bankingpages.data.Recovery
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
@@ -46,6 +47,8 @@ class WrongPasswordException : IOException("That PIN doesn't open this backup. U
 object BackupManager {
     private const val BACKUP_NAME = "banking-pages-backup.bin"
     private const val KEY_NAME = "banking-pages-key.bin"
+    /** The Aadhaar hash for PIN reset, small and separate, so the lock screen can fetch it without a restore. */
+    private const val RECOVERY_NAME = "banking-pages-recovery.json"
     /** BPB1 backups were locked with the app PIN; BPB2 ones with a key kept beside them in Drive. */
     private val MAGIC = "BPB1".toByteArray()
     private val MAGIC2 = "BPB2".toByteArray()
@@ -70,6 +73,9 @@ object BackupManager {
 
     val signedIn get() = _state.value.email != null
 
+    /** Something outside the vault changed (the reset Aadhaar): back up soon. */
+    fun requestBackup() = onDataChanged()
+
     private fun onDataChanged() {
         if (!signedIn || restoring) return
         val work = OneTimeWorkRequestBuilder<BackupWorker>()
@@ -80,7 +86,20 @@ object BackupManager {
         WorkManager.getInstance(app).enqueueUniqueWork("auto-backup", ExistingWorkPolicy.REPLACE, work)
     }
 
+    /**
+     * The reset hash from Drive, for a phone that lost its own copy. Quiet: no busy label,
+     * no lasting error; null when not signed in, offline or never saved.
+     */
+    suspend fun fetchRecovery(): JSONObject? = withContext(Dispatchers.IO) {
+        runCatching {
+            val token = DriveAuth.silentToken(app) ?: return@runCatching null
+            val drive = Drive(token)
+            drive.find(RECOVERY_NAME)?.let { JSONObject(String(drive.download(it.id))) }
+        }.getOrNull()
+    }
+
     suspend fun completeSignIn(token: String): RemoteInfo? = withContext(Dispatchers.IO) {
+        Recovery.markDirty() // this account gets the reset hash with the next backup
         val drive = Drive(token)
         val email = drive.email() ?: "Google account"
         prefs.edit().putString("email", email).remove("error").apply()
@@ -136,8 +155,10 @@ object BackupManager {
             Vault.allBlobIds().distinct().filter(Vault::hasBlob).forEach { put("blobs/$it", Vault.readBlob(it)) }
             LogoStore.exportable().forEach { (k, b) -> put("logos/$k.png", b) }
             put("logos.json", LogoStore.exportState().toString().toByteArray())
+            Recovery.export()?.let { put("recovery.json", it.toString().toByteArray()) }
         }
         drive.replace(BACKUP_NAME, "application/octet-stream", MAGIC2 + Crypto.seal(key, zip.toByteArray()))
+        if (Recovery.needsUpload) Recovery.export()?.let { drive.replace(RECOVERY_NAME, "application/json", it.toString().toByteArray()); Recovery.markUploaded() }
         val now = System.currentTimeMillis()
         prefs.edit().putLong("last_backup", now).remove("error").apply()
         _state.update { it.copy(lastBackupAt = now, error = null) }
@@ -169,6 +190,7 @@ object BackupManager {
 
         var json: JSONObject? = null
         var logoState: JSONObject? = null
+        var recovery: JSONObject? = null
         val blobs = HashMap<String, ByteArray>()
         val logos = HashMap<String, ByteArray>()
         ZipInputStream(ByteArrayInputStream(zipBytes)).use { z ->
@@ -177,6 +199,7 @@ object BackupManager {
                 when {
                     e.name == "vault.json" -> json = JSONObject(String(bytes))
                     e.name == "logos.json" -> logoState = JSONObject(String(bytes))
+                    e.name == "recovery.json" -> recovery = JSONObject(String(bytes))
                     e.name.startsWith("blobs/") -> blobs[e.name.removePrefix("blobs/")] = bytes
                     e.name.startsWith("logos/") -> logos[e.name.removePrefix("logos/").removeSuffix(".png")] = bytes
                 }
@@ -187,14 +210,18 @@ object BackupManager {
         try {
             Vault.replaceAll(data, blobs)
             LogoStore.import(logos, logoState)
+            // A number added on this phone just now wins; otherwise the backup's comes back.
+            if (!Recovery.isSet) recovery?.let(Recovery::import)
         } finally {
             restoring = false
         }
+        if (Recovery.needsUpload) onDataChanged()
         Vault.accounts.value.size
     }
 
     suspend fun deleteBackup() = withDrive("Deleting backup…") { drive ->
-        (drive.list(BACKUP_NAME) + drive.list(KEY_NAME)).forEach { drive.delete(it.id) }
+        (drive.list(BACKUP_NAME) + drive.list(KEY_NAME) + drive.list(RECOVERY_NAME)).forEach { drive.delete(it.id) }
+        Recovery.markDirty()
         prefs.edit().remove("last_backup").apply()
         _state.update { it.copy(lastBackupAt = 0L) }
     }
