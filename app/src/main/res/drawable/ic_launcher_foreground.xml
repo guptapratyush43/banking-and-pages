@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- A bold bank: roof, three pillars and a step -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M54,31.5L77,44.5a1.6,1.6 0 0,1 -0.8,3H31.8a1.6,1.6 0 0,1 -0.8,-3Z" />
+    <path android:fillColor="#F0FFFFFF" android:pathData="M36.5,51.5h7v16h-7zM50.5,51.5h7v16h-7zM64.5,51.5h7v16h-7z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M33.5,71h41a2.5,2.5 0 0,1 2.5,2.5v0.5a2.5,2.5 0 0,1 -2.5,2.5h-41a2.5,2.5 0 0,1 -2.5,-2.5v-0.5a2.5,2.5 0 0,1 2.5,-2.5z" />
+</vector>

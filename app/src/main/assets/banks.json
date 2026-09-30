@@ -1,0 +1,1636 @@
+[
+ {
+  "id": "sbi",
+  "name": "State Bank of India",
+  "category": "Public sector",
+  "domain": "sbi.co.in",
+  "wikidata": "Q1340361",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/sbin/symbol.svg",
+   "sha256": "96f9795952ed4ae6e877e60b97c496e44e73824ba4da74d22cc69c3d87722d69"
+  }
+ },
+ {
+  "id": "pnb",
+  "name": "Punjab National Bank",
+  "category": "Public sector",
+  "domain": "pnbindia.in",
+  "wikidata": "Q2743499",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/punb/symbol.svg",
+   "sha256": "815a32e03177aa89d7c291087db435196605fc1d3fa3368e91ccff5e2ff35d1b"
+  }
+ },
+ {
+  "id": "bob",
+  "name": "Bank of Baroda",
+  "category": "Public sector",
+  "domain": "bankofbaroda.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/barb/symbol.svg",
+   "sha256": "33470e0f7eacaf0738f9cfa2e5de8b1444618e55654a86456d4a2a2f2f107c2d"
+  }
+ },
+ {
+  "id": "canara",
+  "name": "Canara Bank",
+  "category": "Public sector",
+  "domain": "canarabank.com",
+  "wikidata": "Q2003777",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/cnrb/symbol.svg",
+   "sha256": "0d81f958adb910977c58d52a80a2ffa008c509efa2e8c7bcb64134c9c3946036"
+  }
+ },
+ {
+  "id": "union",
+  "name": "Union Bank of India",
+  "category": "Public sector",
+  "domain": "unionbankofindia.co.in",
+  "wikidata": "Q2004078",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ubin/symbol.svg",
+   "sha256": "3a1c46e4717522ad43741ed1733b0737c255960869cdfd39edda7a5eca104386"
+  }
+ },
+ {
+  "id": "boi",
+  "name": "Bank of India",
+  "category": "Public sector",
+  "domain": "bankofindia.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/bkid/symbol.svg",
+   "sha256": "8c5ef6d6b922fdf9d70f8be0121cbadb5e77489331a2ea10e2972c9e24a20933"
+  }
+ },
+ {
+  "id": "indian",
+  "name": "Indian Bank",
+  "category": "Public sector",
+  "domain": "indianbank.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/idib/symbol.svg",
+   "sha256": "158f4578920c965a387aafc9633d1a6e5723651762fadb6e3120d189da58f370"
+  }
+ },
+ {
+  "id": "central",
+  "name": "Central Bank of India",
+  "category": "Public sector",
+  "domain": "centralbankofindia.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/cbin/symbol.svg",
+   "sha256": "613fbf83ccacdfdbbd7901069d96a377251d44843ba7a76019af3f9711255afc"
+  }
+ },
+ {
+  "id": "iob",
+  "name": "Indian Overseas Bank",
+  "category": "Public sector",
+  "domain": "iob.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ioba/symbol.svg",
+   "sha256": "723cb05ab47e331cc3fe4a78cbedda0ebd6463247785d30f79e11f9fe34587ff"
+  }
+ },
+ {
+  "id": "uco",
+  "name": "UCO Bank",
+  "category": "Public sector",
+  "domain": "ucobank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ucba/symbol.svg",
+   "sha256": "494780a77cf33f8e70d5a45c89d8617ccd8ad28f17e537e9b6d5039e158ceaa9"
+  }
+ },
+ {
+  "id": "bom",
+  "name": "Bank of Maharashtra",
+  "category": "Public sector",
+  "domain": "bankofmaharashtra.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/mahb/symbol.svg",
+   "sha256": "f98c8ce2174a6da0294c18aa88dab72498d1eab9e056a649bc53731c080fb174"
+  }
+ },
+ {
+  "id": "psb",
+  "name": "Punjab & Sind Bank",
+  "category": "Public sector",
+  "domain": "punjabandsindbank.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/psib/symbol.svg",
+   "sha256": "6a20faa428df62c147a45abe2ff84a38966ccd48d06040f23cdb7ef9132d5ab5"
+  }
+ },
+ {
+  "id": "hdfc",
+  "name": "HDFC Bank",
+  "category": "Private sector",
+  "domain": "hdfcbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/hdfc/symbol.svg",
+   "sha256": "34f1e74edce7573b1d527c95bfda2762f7718b1a997e466c8d225097c7a6111c"
+  }
+ },
+ {
+  "id": "icici",
+  "name": "ICICI Bank",
+  "category": "Private sector",
+  "domain": "icicibank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/icic/symbol.svg",
+   "sha256": "0a4cdb5d1c13885d0f37b0dde02aae53bf8cc38aeb9cfa67f1dfe96d51810b80"
+  }
+ },
+ {
+  "id": "axis",
+  "name": "Axis Bank",
+  "category": "Private sector",
+  "domain": "axisbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/utib/symbol.svg",
+   "sha256": "b22f3cf1f9927ce8cb65a995f23a9963e9c1e298a4fb063d7ef7d8d721b9bd44"
+  }
+ },
+ {
+  "id": "kotak",
+  "name": "Kotak Mahindra Bank",
+  "category": "Private sector",
+  "domain": "kotak.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/kkbk/symbol.svg",
+   "sha256": "030c8077ef395eeefda7a4da35c5506e990df3a700a44bfa5e3ef2bf9a021ce4"
+  }
+ },
+ {
+  "id": "indusind",
+  "name": "IndusInd Bank",
+  "category": "Private sector",
+  "domain": "indusind.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/indb/symbol.svg",
+   "sha256": "528a7e4ba1c36d7796536ad74fd7a01bb612e9e728589b2c4fd6d145db80da36"
+  }
+ },
+ {
+  "id": "yes",
+  "name": "YES Bank",
+  "category": "Private sector",
+  "domain": "yesbank.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/yesb/symbol.svg",
+   "sha256": "2aefbe78e3441337456d4d67b17798c917b13a769b155095b986b1fcd76abf5c"
+  }
+ },
+ {
+  "id": "idfcfirst",
+  "name": "IDFC FIRST Bank",
+  "category": "Private sector",
+  "domain": "idfcfirstbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/idfb/symbol.svg",
+   "sha256": "e5ef157f22a89b8378c4824394c2908c85a597da4a790051eb951a0622d5cc4f"
+  }
+ },
+ {
+  "id": "idbi",
+  "name": "IDBI Bank",
+  "category": "Private sector",
+  "domain": "idbibank.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ibkl/symbol.svg",
+   "sha256": "1e4bf59bfa99223bbd0a700c489d226b28cc36b9f723ca548d9a8bce19356ce3"
+  }
+ },
+ {
+  "id": "federal",
+  "name": "Federal Bank",
+  "category": "Private sector",
+  "domain": "federalbank.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/fdrl/symbol.svg",
+   "sha256": "d45339eecb99a4cdc9b33381560bdbcaea196bea974e9b1d8e516067d641c851"
+  }
+ },
+ {
+  "id": "bandhan",
+  "name": "Bandhan Bank",
+  "category": "Private sector",
+  "domain": "bandhanbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/bdbl/symbol.svg",
+   "sha256": "f1f0c14e5889dafa9cd5fe31f8377a7a09f521599c5162d783f94ff5af7eab5f"
+  }
+ },
+ {
+  "id": "rbl",
+  "name": "RBL Bank",
+  "category": "Private sector",
+  "domain": "rblbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.rbl.bank.in:443/themes/custom/rbl_bank/favicon.ico",
+   "sha256": "cac0804e3749a8411efe3a34ac1c4a610caa82f016dd23ae1156337048d65871"
+  }
+ },
+ {
+  "id": "southindian",
+  "name": "South Indian Bank",
+  "category": "Private sector",
+  "domain": "southindianbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/sibl/symbol.svg",
+   "sha256": "9ebeca44e5dfbb7230135935618406da75b395c44864a157826407812a251712"
+  }
+ },
+ {
+  "id": "karnataka",
+  "name": "Karnataka Bank",
+  "category": "Private sector",
+  "domain": "karnatakabank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/karb/symbol.svg",
+   "sha256": "fc54422c8147438318c93ee7c201d37e4a06a5b053720f4afe36e7177d3a8798"
+  }
+ },
+ {
+  "id": "kvb",
+  "name": "Karur Vysya Bank",
+  "category": "Private sector",
+  "domain": "kvb.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/kvbl/symbol.svg",
+   "sha256": "90f8db1d4214adaeec27320202d728eb07c5e99844b599d4ab2ff7e0d5f6e5ef"
+  }
+ },
+ {
+  "id": "cub",
+  "name": "City Union Bank",
+  "category": "Private sector",
+  "domain": "cityunionbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ciub/symbol.svg",
+   "sha256": "a9244c10af6f588655e0249be0b794f246802b501a4a31eaa71de2899c909c0c"
+  }
+ },
+ {
+  "id": "tmb",
+  "name": "Tamilnad Mercantile Bank",
+  "category": "Private sector",
+  "domain": "tmb.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/tmbl/symbol.svg",
+   "sha256": "5845048cc8fcca18f70d78c135eabe73691c69e6581142c173eb20c9ad766e05"
+  }
+ },
+ {
+  "id": "jkbank",
+  "name": "Jammu & Kashmir Bank",
+  "category": "Private sector",
+  "domain": "jkbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/jaka/symbol.svg",
+   "sha256": "03b2f1c818793aec20404b05fc9f6eae6bf4c3444179e99b06758fcb0f3aeda6"
+  }
+ },
+ {
+  "id": "dcb",
+  "name": "DCB Bank",
+  "category": "Private sector",
+  "domain": "dcbbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/dcbl/symbol.svg",
+   "sha256": "6d09c1b1d4d226bf6e7c86c170832f6eb037a38f13ad97182f1355b21b7d4c89"
+  }
+ },
+ {
+  "id": "csb",
+  "name": "CSB Bank",
+  "category": "Private sector",
+  "domain": "csb.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/csbk/symbol.svg",
+   "sha256": "0b8b38641078f560fb2c34a7a88b16f526ea2cc3e160c298e3be6c69b3921f75"
+  }
+ },
+ {
+  "id": "dhanlaxmi",
+  "name": "Dhanlaxmi Bank",
+  "category": "Private sector",
+  "domain": "dhanbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/dlxb/symbol.svg",
+   "sha256": "8739761f89a6f3d73d314615a950e819b6cca19e907d13166169b3ff94d357c7"
+  }
+ },
+ {
+  "id": "nainital",
+  "name": "Nainital Bank",
+  "category": "Private sector",
+  "domain": "nainitalbank.co.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ntbl/symbol.svg",
+   "sha256": "b1f42e295135f18d8f412d2fa2443d150bceb1aa544462c54f580eaee1ae950c"
+  }
+ },
+ {
+  "id": "au",
+  "name": "AU Small Finance Bank",
+  "category": "Small finance",
+  "domain": "aubank.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/aubl/symbol.svg",
+   "sha256": "b281514e209efebaea4ff0b3c4c8ce023d6f8cc3c6de8cf891d73a3de9aab1b4"
+  }
+ },
+ {
+  "id": "equitas",
+  "name": "Equitas Small Finance Bank",
+  "category": "Small finance",
+  "domain": "equitasbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://equitas.bank.in/strapi-dev/uploads/favicon_46c37d5b6c.png",
+   "sha256": "3bae11a737fbbee90c589bb359f92035b894721765d74330727a244a9d64148f"
+  }
+ },
+ {
+  "id": "ujjivan",
+  "name": "Ujjivan Small Finance Bank",
+  "category": "Small finance",
+  "domain": "ujjivansfb.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/ujvn/symbol.svg",
+   "sha256": "a39927d602ec8c7e6e872214ff7036bfa0f0ab42a5228f59d0ecaede416ddf36"
+  }
+ },
+ {
+  "id": "jana",
+  "name": "Jana Small Finance Bank",
+  "category": "Small finance",
+  "domain": "janabank.com",
+  "logo": false
+ },
+ {
+  "id": "suryoday",
+  "name": "Suryoday Small Finance Bank",
+  "category": "Small finance",
+  "domain": "suryodaybank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://suryoday.bank.in/cms/uploads/favicon_48b4604e8d.ico",
+   "sha256": "5869cb8b438fd1c0b2e2e439a46013d601d4fde04317ac38414083a1be119249"
+  }
+ },
+ {
+  "id": "utkarsh",
+  "name": "Utkarsh Small Finance Bank",
+  "category": "Small finance",
+  "domain": "utkarsh.bank",
+  "logo": false
+ },
+ {
+  "id": "esaf",
+  "name": "ESAF Small Finance Bank",
+  "category": "Small finance",
+  "domain": "esafbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/esmf/symbol.svg",
+   "sha256": "10ef635666526fc037d4b93371149bc9c59790282bc9562b8d7c5c335fce39c4"
+  }
+ },
+ {
+  "id": "capital",
+  "name": "Capital Small Finance Bank",
+  "category": "Small finance",
+  "domain": "capitalbank.co.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.capital.bank.in/assets/images/logo1.jpg",
+   "sha256": "42639341621e70a678f2c7d1004fb3a5b1790dbd5daf5f8477b38c33bbe01991"
+  }
+ },
+ {
+  "id": "shivalik",
+  "name": "Shivalik Small Finance Bank",
+  "category": "Small finance",
+  "domain": "shivalikbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://shivalik.bank.in/public/frontendassets/favicon.ico",
+   "sha256": "5f6af38098856e2fa2a5c62131c826f6ca6f7a399f7311dfde8606676b95df50"
+  }
+ },
+ {
+  "id": "unity",
+  "name": "Unity Small Finance Bank",
+  "category": "Small finance",
+  "domain": "theunitybank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://unity.bank.in/android-icon-192x192.png",
+   "sha256": "c38549f25d8287a8c9416f16999097a0f4d4ccc5fbb23efa0c998cf5f5bb976b"
+  }
+ },
+ {
+  "id": "slice",
+  "name": "slice Small Finance Bank",
+  "category": "Small finance",
+  "domain": "sliceit.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://slice.bank.in/android-chrome-512x512.png",
+   "sha256": "2184f3227ff64aef2ebb2cc87471144fec89cc0107a6aab670a181f04de0f1b0"
+  }
+ },
+ {
+  "id": "ippb",
+  "name": "India Post Payments Bank",
+  "category": "Payments bank",
+  "domain": "ippbonline.com",
+  "logo": false
+ },
+ {
+  "id": "airtel",
+  "name": "Airtel Payments Bank",
+  "category": "Payments bank",
+  "domain": "airtel.in",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/airp/symbol.svg",
+   "sha256": "f65a9f028cd2cef1c215556339effe26161836e6665fdf99682d7fbec78c3ee4"
+  }
+ },
+ {
+  "id": "fino",
+  "name": "Fino Payments Bank",
+  "category": "Payments bank",
+  "domain": "finobank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/fino/symbol.svg",
+   "sha256": "d865b14547999143f8f34f5eb3bcda298f39e7aa21b3bac4334a71d34f3154a1"
+  }
+ },
+ {
+  "id": "jio",
+  "name": "Jio Payments Bank",
+  "category": "Payments bank",
+  "domain": "jiopaymentsbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/jiop/symbol.svg",
+   "sha256": "e24adc5b0a07a83e88da1f6295505372a1c379c3f98ca845e5671938f243e4f4"
+  }
+ },
+ {
+  "id": "paytm",
+  "name": "Paytm Payments Bank",
+  "category": "Payments bank",
+  "domain": "paytmbank.com",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/pytm/symbol.svg",
+   "sha256": "d36b60f7080210cc605fbcca25c61e2b8a3a163b731f8f8ac841fee6f122ce87"
+  }
+ },
+ {
+  "id": "nsdl",
+  "name": "NSDL Payments Bank",
+  "category": "Payments bank",
+  "domain": "nsdlbank.com",
+  "logo": false
+ },
+ {
+  "id": "post",
+  "name": "India Post Office Savings",
+  "category": "Payments bank",
+  "domain": "indiapost.gov.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.indiapost.gov.in/icon.png",
+   "sha256": "2ee93ba1c96cfad5d2a68b977e652fa5a4b5d76285d34141ca77f8a82822600b"
+  }
+ },
+ {
+  "id": "sc",
+  "name": "Standard Chartered",
+  "category": "Foreign",
+  "domain": "sc.com",
+  "wikidata": "Q548278",
+  "logo": true,
+  "source": {
+   "kind": "repo",
+   "url": "https://raw.githubusercontent.com/praveenpuglia/indian-banks/main/assets/logos/scbl/symbol.svg",
+   "sha256": "d691dbcf2188ee378bc1619a84d45767da73d05a9266302b183a5889bcc8c41e"
+  }
+ },
+ {
+  "id": "hsbc",
+  "name": "HSBC India",
+  "category": "Foreign",
+  "domain": "hsbc.co.in",
+  "wikidata": "Q190464",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.hsbc.bank.in/etc.clientlibs/dpws/clientlibs-public/clientlib-site/resources/favicons/android-chrome-192x192.png",
+   "sha256": "a0b15d2a5118249e26b1ff210147b225d660cf9d4d8cb5f811070997df0ed2af"
+  }
+ },
+ {
+  "id": "citi",
+  "name": "Citibank",
+  "category": "Foreign",
+  "domain": "citi.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.citi.com/cbol-hp-static-assets/assets/favicon.ico",
+   "sha256": "2f6d73a312361b30f573d8f97bf9b345f2316c3d8b40723592b3145e360f8c32"
+  }
+ },
+ {
+  "id": "dbs",
+  "name": "DBS Bank India",
+  "category": "Foreign",
+  "domain": "dbs.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=dbs.com&sz=256",
+   "sha256": "effedb4bc4dc9b29e055c0d9267550adb2718401888ae1cef358b6f949065d0f"
+  }
+ },
+ {
+  "id": "deutsche",
+  "name": "Deutsche Bank",
+  "category": "Foreign",
+  "domain": "db.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://prod2.master.dwebcms.db.com/application/themes/default/favicon/android-chrome-512x512.png",
+   "sha256": "a18404818a482ffc0571cb05c07695b2dfe96036b257a1d653b50891b0edcccd"
+  }
+ },
+ {
+  "id": "barclays",
+  "name": "Barclays Bank",
+  "category": "Foreign",
+  "domain": "barclays.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.barclays.bank.in/content/dam/icons/favicons/barclays/apple-touch-icon-180x180.png",
+   "sha256": "293b048dea708fbeb92dee78b86db2ee3b7c74eb0084e7139329ba2b14aadfff"
+  }
+ },
+ {
+  "id": "sbm",
+  "name": "SBM Bank India",
+  "category": "Foreign",
+  "domain": "sbmbank.co.in",
+  "logo": false
+ },
+ {
+  "id": "amex",
+  "name": "American Express Banking",
+  "category": "Foreign",
+  "domain": "americanexpress.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.americanexpress.com/apple-touch-icon.png",
+   "sha256": "9cbc6b3272934cd366a0cc9a3e1d0f5fae0c00a9f95b88921e349174f054d87b"
+  }
+ },
+ {
+  "id": "boa",
+  "name": "Bank of America",
+  "category": "Foreign",
+  "domain": "bankofamerica.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.bankofamerica.com/homepage/spa-assets/images/assets-images-global-favicon-android-chrome-192x192-CSXafb7d716.png",
+   "sha256": "b47bfe9d7333188f5b2f8690785ccd966d882c2364a5e4e5ae293e02554ad8d8"
+  }
+ },
+ {
+  "id": "jpm",
+  "name": "JPMorgan Chase Bank",
+  "category": "Foreign",
+  "domain": "jpmorgan.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.jpmorgan.com/etc.clientlibs/cws/clientlibs/clientlib-base/resources/jpm/images/jpm-favicon-152.png",
+   "sha256": "f04118a6e3e7226207c54b9d1b89d1bf72c7cf02d573e3002f0b6698455edb8c"
+  }
+ },
+ {
+  "id": "bnp",
+  "name": "BNP Paribas",
+  "category": "Foreign",
+  "domain": "bnpparibas.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://cdn-group.bnpparibas.com/build/images/apple-touch-icon.png",
+   "sha256": "d8358a4312ad8ab368c991be60ba7b6a4b727cdf992173bfb8472c08ef0935b2"
+  }
+ },
+ {
+  "id": "emiratesnbd",
+  "name": "Emirates NBD",
+  "category": "Foreign",
+  "domain": "emiratesnbd.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.emiratesnbd.com/-/media/enbd/images/logos/favicon.png",
+   "sha256": "5a5cdbe0054a43bbb16f6225cf1e6a088d4b2626b78a7fd7b98ed3cffbd23619"
+  }
+ },
+ {
+  "id": "fab",
+  "name": "First Abu Dhabi Bank",
+  "category": "Foreign",
+  "domain": "bankfab.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.bankfab.com/-/media/fab-uds/common-images/icons/favicon.png",
+   "sha256": "972919c924cab5254d38e36059b9698811b5fb01e2df5eb52a814e08a2135627"
+  }
+ },
+ {
+  "id": "mashreq",
+  "name": "Mashreq Bank",
+  "category": "Foreign",
+  "domain": "mashreqbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.mashreq.com/dist/mashreq-reactjs/favicon.ico",
+   "sha256": "dd0a923f0d8f51233cfa778aad8ce025d35f150b74d14216d9c1ca88eb976286"
+  }
+ },
+ {
+  "id": "adcb",
+  "name": "Abu Dhabi Commercial Bank",
+  "category": "Foreign",
+  "domain": "adcb.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=adcb.com&sz=256",
+   "sha256": "6db5fd006d5249d48dd580fe632de3422000f9a2ed28136c1b0aa2d7e5c9d887"
+  }
+ },
+ {
+  "id": "qnb",
+  "name": "Qatar National Bank",
+  "category": "Foreign",
+  "domain": "qnb.com",
+  "logo": false
+ },
+ {
+  "id": "doha",
+  "name": "Doha Bank",
+  "category": "Foreign",
+  "domain": "dohabank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=dohabank.com&sz=256",
+   "sha256": "1dfb654fa28da5668c99af4c6ff28224841f33a93e50e83df16053905311d95c"
+  }
+ },
+ {
+  "id": "mufg",
+  "name": "MUFG Bank",
+  "category": "Foreign",
+  "domain": "mufg.jp",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.mufg.jp/apple-touch-icon.png",
+   "sha256": "c42886d1bc43432ca06281fe26743e754c3d0a7b2113708b0a59072ddf1c0bf3"
+  }
+ },
+ {
+  "id": "mizuho",
+  "name": "Mizuho Bank",
+  "category": "Foreign",
+  "domain": "mizuhogroup.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://cdn.prod.website-files.com/67cb23eaf0c6c4d4080e059a/67d44ce8bb4fc244b2b78014_mizuho-webclip.jpg",
+   "sha256": "591481beaf01f19b93bc8b03e3bc121f2f56ae698895939b6b67ff2a37468a01"
+  }
+ },
+ {
+  "id": "smbc",
+  "name": "Sumitomo Mitsui Banking",
+  "category": "Foreign",
+  "domain": "smbc.co.jp",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.smbc.co.jp/apple-touch-icon.png",
+   "sha256": "a94e02394ce392009e1b9d2bb620402db2b73d1da65da1b62c50f85b848e920f"
+  }
+ },
+ {
+  "id": "socgen",
+  "name": "Société Générale",
+  "category": "Foreign",
+  "domain": "societegenerale.com",
+  "logo": false
+ },
+ {
+  "id": "ca",
+  "name": "Crédit Agricole",
+  "category": "Foreign",
+  "domain": "credit-agricole.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.credit-agricole.com/assets/build/images/icons/favicon.ico",
+   "sha256": "3844f22528b1a18a1807c9979ffeb239d550692cbc8ff32f4ebde1ac045cc741"
+  }
+ },
+ {
+  "id": "shinhan",
+  "name": "Shinhan Bank",
+  "category": "Foreign",
+  "domain": "shinhan.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://image.shinhan.com/favicon.ico",
+   "sha256": "6414da12109065aaa7cb10df39513c340e513d8a8702f226643470d24cb6e7ac"
+  }
+ },
+ {
+  "id": "woori",
+  "name": "Woori Bank",
+  "category": "Foreign",
+  "domain": null,
+  "wikidata": "Q494369",
+  "logo": false
+ },
+ {
+  "id": "kookmin",
+  "name": "KB Kookmin Bank",
+  "category": "Foreign",
+  "domain": "kbstar.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.kbstar.com/openimg/favi_ipad_n201512.png",
+   "sha256": "fc75a7f252d57777db419f09a2f475e6bf863f0b80ae22e1a0236f98964a5ba8"
+  }
+ },
+ {
+  "id": "hana",
+  "name": "KEB Hana Bank",
+  "category": "Foreign",
+  "domain": "kebhana.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=kebhana.com&sz=256",
+   "sha256": "5c53f3b9ebf705b1dec723130ea5fe87102343b209119a22882fe11edbaba53d"
+  }
+ },
+ {
+  "id": "bbk",
+  "name": "Bank of Bahrain and Kuwait",
+  "category": "Foreign",
+  "domain": "bbkonline.com",
+  "wikidata": "Q4856052",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.bbkonline.com/wp-content/uploads/2022/11/fav.png?w=74",
+   "sha256": "52cfe364069a8fee4429b32abf586f83c82cb01ac80811be57e553f6d497c795"
+  }
+ },
+ {
+  "id": "rabobank",
+  "name": "Rabobank",
+  "category": "Foreign",
+  "domain": "rabobank.com",
+  "wikidata": "Q252004",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=rabobank.com&sz=256",
+   "sha256": "a56e8dcab2a2793213ab11b79bf70dc875b4f9d0e486c24b59ee457f17d8c738"
+  }
+ },
+ {
+  "id": "icbc",
+  "name": "ICBC",
+  "category": "Foreign",
+  "domain": "icbc.com.cn",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=icbc.com.cn&sz=256",
+   "sha256": "24df94ff24deaf42c68e4a62d22e8cd7f8c28c2d528eb894725c1644c81d06c0"
+  }
+ },
+ {
+  "id": "ctbc",
+  "name": "CTBC Bank",
+  "category": "Foreign",
+  "domain": "ctbcbank.com",
+  "logo": false
+ },
+ {
+  "id": "boc",
+  "name": "Bank of Ceylon",
+  "category": "Foreign",
+  "domain": "boc.lk",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.boc.lk/assets/images/favicons/android-icon-192x192.png",
+   "sha256": "1ac796a187f99d0ff82c5f15a727223f010515627cf48657e4288353c3abac86"
+  }
+ },
+ {
+  "id": "sonali",
+  "name": "Sonali Bank",
+  "category": "Foreign",
+  "domain": "sonalibank.com.bd",
+  "wikidata": "Q3350382",
+  "logo": true,
+  "source": {
+   "kind": "wikidata",
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sonali_Bank_Limited.svg?width=512",
+   "sha256": "d27fe30fcbc6e6cec990f73520261209dfaa71697d3b86372b6c883b23e49a37",
+   "file": "Sonali Bank Limited.svg"
+  }
+ },
+ {
+  "id": "natwest",
+  "name": "NatWest Markets",
+  "category": "Foreign",
+  "domain": "natwest.com",
+  "wikidata": "Q2740021",
+  "logo": true,
+  "source": {
+   "kind": "wikidata",
+   "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Natwest_2014_logo.svg?width=512",
+   "sha256": "e09f6b38cf4ff7041ce6eb2727bafe5fcd9b10d2368b443892b017a33f28668c",
+   "file": "Natwest 2014 logo.svg"
+  }
+ },
+ {
+  "id": "rrb_ap",
+  "name": "Andhra Pradesh Grameena Bank",
+  "category": "Regional rural",
+  "domain": "apgb.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_ar",
+  "name": "Arunachal Pradesh Rural Bank",
+  "category": "Regional rural",
+  "domain": "apruralbank.co.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_as",
+  "name": "Assam Gramin Vikash Bank",
+  "category": "Regional rural",
+  "domain": "agvbank.co.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_br",
+  "name": "Bihar Gramin Bank",
+  "category": "Regional rural",
+  "domain": "biharbank.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_cg",
+  "name": "Chhattisgarh Rajya Gramin Bank",
+  "category": "Regional rural",
+  "domain": "cgbank.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=cgbank.in&sz=256",
+   "sha256": "c12378ed9fee32d7bab927161e517c1a17dbb0907b4f25bc0d926861bb270b15"
+  }
+ },
+ {
+  "id": "rrb_gj",
+  "name": "Gujarat Gramin Bank",
+  "category": "Regional rural",
+  "domain": "gujaratgraminbank.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_hr",
+  "name": "Sarva Haryana Gramin Bank",
+  "category": "Regional rural",
+  "domain": "shgb.co.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_hp",
+  "name": "Himachal Pradesh Gramin Bank",
+  "category": "Regional rural",
+  "domain": "hpgb.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_jk",
+  "name": "J&K Grameen Bank",
+  "category": "Regional rural",
+  "domain": "jkgb.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.jkgrameen.bank.in/favicon/android-icon-192x192.png",
+   "sha256": "04b4feabb888b78f03911790f7e0960f1ca67cf595d84f56983b0c55cbefa214"
+  }
+ },
+ {
+  "id": "rrb_jh",
+  "name": "Jharkhand Rajya Gramin Bank",
+  "category": "Regional rural",
+  "domain": "jrgb.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_ka",
+  "name": "Karnataka Grameena Bank",
+  "category": "Regional rural",
+  "domain": "karnatakagraminbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://karnatakagb.bank.in/public/img/logo/fav-icon.png",
+   "sha256": "0db4bc87965993afe406f5fac853bb9c69be2f9d3d8f33efd2a44072f3b961e2"
+  }
+ },
+ {
+  "id": "rrb_kl",
+  "name": "Kerala Gramin Bank",
+  "category": "Regional rural",
+  "domain": "keralagbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://kgb.bank.in/public/img/icons/favicon.png",
+   "sha256": "d136c270738f1a43adf67f5812e7de01632875ae56cd2b2175cad72b7e000d05"
+  }
+ },
+ {
+  "id": "rrb_mp",
+  "name": "Madhya Pradesh Gramin Bank",
+  "category": "Regional rural",
+  "domain": "mpgb.co.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=mpgb.co.in&sz=256",
+   "sha256": "73456cb7f583e82957d329dda4b3711e35753e3eca1fa9edb156d6413a159073"
+  }
+ },
+ {
+  "id": "rrb_mh",
+  "name": "Maharashtra Gramin Bank",
+  "category": "Regional rural",
+  "domain": "mahagramin.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=mahagramin.in&sz=256",
+   "sha256": "b7e107f2aee0a315d5183b7fd4e4bb05b66ca346e46263d514fdacf7673aba09"
+  }
+ },
+ {
+  "id": "rrb_mn",
+  "name": "Manipur Rural Bank",
+  "category": "Regional rural",
+  "domain": "manipurruralbank.com",
+  "logo": false
+ },
+ {
+  "id": "rrb_ml",
+  "name": "Meghalaya Rural Bank",
+  "category": "Regional rural",
+  "domain": "meghalayaruralbank.co.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://megrb.bank.in/assets/icons/newfav.png",
+   "sha256": "94733f27a39d9c3cab0aed2bd002fab305844b506a0fa3d337b062498b253e5c"
+  }
+ },
+ {
+  "id": "rrb_mz",
+  "name": "Mizoram Rural Bank",
+  "category": "Regional rural",
+  "domain": "mizoramruralbank.co.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_nl",
+  "name": "Nagaland Rural Bank",
+  "category": "Regional rural",
+  "domain": "nagalandruralbank.com",
+  "logo": false
+ },
+ {
+  "id": "rrb_od",
+  "name": "Odisha Grameen Bank",
+  "category": "Regional rural",
+  "domain": "odishabank.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_py",
+  "name": "Puduvai Bharathiar Grama Bank",
+  "category": "Regional rural",
+  "domain": "pbgbank.com",
+  "logo": false
+ },
+ {
+  "id": "rrb_pb",
+  "name": "Punjab Gramin Bank",
+  "category": "Regional rural",
+  "domain": "pgb.org.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=pgb.org.in&sz=256",
+   "sha256": "e07a874d41219c40b079ff89eb3bf8bb4e5f7ce6d7f2e90a64be701cf54b31e2"
+  }
+ },
+ {
+  "id": "rrb_rj",
+  "name": "Rajasthan Gramin Bank",
+  "category": "Regional rural",
+  "domain": "rmgb.in",
+  "logo": false
+ },
+ {
+  "id": "rrb_tn",
+  "name": "Tamil Nadu Grama Bank",
+  "category": "Regional rural",
+  "domain": "tamilnadugramabank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=tamilnadugramabank.com&sz=256",
+   "sha256": "28558eef4c712042b00f37476707a504b9fc2ad8fdae4fad5d1e40d2a36ae018"
+  }
+ },
+ {
+  "id": "rrb_ts",
+  "name": "Telangana Grameena Bank",
+  "category": "Regional rural",
+  "domain": "tgbhyd.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://tgb.bank.in/fav.png",
+   "sha256": "dfc6ebfac152102f1e3cb098c16676baadfdf8fca986ad96d2b966a928790d02"
+  }
+ },
+ {
+  "id": "rrb_tr",
+  "name": "Tripura Gramin Bank",
+  "category": "Regional rural",
+  "domain": "tripuragraminbank.org",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.tripuragraminbank.org/logo512.png",
+   "sha256": "f6d0be258c8bbfd6896c041f4a02add274e6d35fcfdf120c90c15de8d56f545f"
+  }
+ },
+ {
+  "id": "rrb_up",
+  "name": "Uttar Pradesh Gramin Bank",
+  "category": "Regional rural",
+  "domain": "aryavart-rrb.com",
+  "logo": false
+ },
+ {
+  "id": "rrb_uk",
+  "name": "Uttarakhand Gramin Bank",
+  "category": "Regional rural",
+  "domain": "uttarakhandgraminbank.com",
+  "logo": false
+ },
+ {
+  "id": "rrb_wb",
+  "name": "West Bengal Gramin Bank",
+  "category": "Regional rural",
+  "domain": "pbgbank.in",
+  "logo": false
+ },
+ {
+  "id": "saraswat",
+  "name": "Saraswat Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "saraswatbank.com",
+  "logo": false
+ },
+ {
+  "id": "cosmos",
+  "name": "Cosmos Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "cosmosbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.cosmos.bank.in/images/cosmos-bank-2019-fevicon.png",
+   "sha256": "0fbb014bc82ef592f57518dfacd9d7ac3d1296e92a5f2019a220feb252251fe4"
+  }
+ },
+ {
+  "id": "svc",
+  "name": "SVC Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "svcbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.svc.bank.in/images/favicon.ico",
+   "sha256": "9fc7a19ce01a4f6b094b794420cf5ea89bbaf18ec684d2ba39541f05f825e0cc"
+  }
+ },
+ {
+  "id": "tjsb",
+  "name": "TJSB Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "tjsbbank.co.in",
+  "logo": false
+ },
+ {
+  "id": "abhyudaya",
+  "name": "Abhyudaya Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "abhyudayabank.co.in",
+  "logo": false
+ },
+ {
+  "id": "bharatcoop",
+  "name": "Bharat Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "bharatbank.com",
+  "logo": false
+ },
+ {
+  "id": "nkgsb",
+  "name": "NKGSB Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "nkgsb-bank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.nkgsb.bank.in/favicon.ico",
+   "sha256": "e553529f0754e52c0ebb326a1a3724cb619fd0e0bcfdb5aa29b8a631704592e2"
+  }
+ },
+ {
+  "id": "janatapune",
+  "name": "Janata Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "janatabankpune.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://jsblpune.bank.in//images/ico_12100.ico",
+   "sha256": "39d17f9fd4c686ad5177e14c1fb4ddb26cc94b1b77a9f5bda9db4d2dfc183e60"
+  }
+ },
+ {
+  "id": "kalupur",
+  "name": "Kalupur Commercial Co-op Bank",
+  "category": "Co-operative",
+  "domain": "kalupurbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://kalupur.bank.in/wp-content/uploads/2019/12/n_logo-1.png",
+   "sha256": "486af3abc688df3876bee2687186bbe027902648bda62166afbc44a100f0b49a"
+  }
+ },
+ {
+  "id": "apna",
+  "name": "Apna Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "apnabank.co.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.apna.bank.in/images/apna_favicon.png",
+   "sha256": "99c324fbafe9b82c4af48a0143fe7249112f6dbc42a89b287a6bdd839ea92ea0"
+  }
+ },
+ {
+  "id": "zoroastrian",
+  "name": "Zoroastrian Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "zoroastrianbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://zoroastrianbank.bank.in/images/favicon.gif",
+   "sha256": "63aae729a8633d95754f746e972cd86e1e109d158ed3f9a701b0baf335444bb8"
+  }
+ },
+ {
+  "id": "citizencredit",
+  "name": "Citizen Credit Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "citizencreditbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=citizencreditbank.com&sz=256",
+   "sha256": "7a2ec914aef31174c32ff22a2c1b73fda7c81763ac401cf931db781985d0ad6c"
+  }
+ },
+ {
+  "id": "mehsana",
+  "name": "Mehsana Urban Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "mucbank.com",
+  "logo": false
+ },
+ {
+  "id": "rnsb",
+  "name": "Rajkot Nagarik Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "rnsbindia.com",
+  "logo": false
+ },
+ {
+  "id": "nutan",
+  "name": "Nutan Nagarik Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "nutanbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://nutanbank.com/logo-icon.png",
+   "sha256": "b7d3e8b105ad549d5181c706aa52148b46ad06aff91f52dd086f26de6b3b1279"
+  }
+ },
+ {
+  "id": "amco",
+  "name": "Ahmedabad Mercantile Co-op Bank",
+  "category": "Co-operative",
+  "domain": "amcobank.com",
+  "logo": false
+ },
+ {
+  "id": "dnsb",
+  "name": "Dombivli Nagari Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "dnsbank.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://dns.bank.in/apple-touch-icon.png",
+   "sha256": "25d3cb1a65da7ae70d084c769009016ec11557e3ff2cdcbc5e656bd3d3e739f3"
+  }
+ },
+ {
+  "id": "greater",
+  "name": "Greater Bombay Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "greaterbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://greaterbank.bank.in/assets/img/ico/favicon.png",
+   "sha256": "c4e065b2df9f20c92f74171ab8dc1edb0440329968abe1cec20e8edf894d106c"
+  }
+ },
+ {
+  "id": "bccb",
+  "name": "Bassein Catholic Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "bccb.co.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://bccb.bank.in/wp-content/uploads/2022/10/cropped-ms-icon-310x310-1-192x192.png",
+   "sha256": "4595397ab55764d62fae876a2633ed49ae13392c6226e7d5d20d1c3c34681824"
+  }
+ },
+ {
+  "id": "parsik",
+  "name": "GP Parsik Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "gpparsikbank.com",
+  "logo": false
+ },
+ {
+  "id": "vasai",
+  "name": "Vasai Vikas Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "vasaivikasbank.co.in",
+  "logo": false
+ },
+ {
+  "id": "janakalyan",
+  "name": "Janakalyan Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "janakalyanbank.com",
+  "logo": false
+ },
+ {
+  "id": "karad",
+  "name": "Karad Urban Co-operative Bank",
+  "category": "Co-operative",
+  "domain": null,
+  "logo": false
+ },
+ {
+  "id": "model",
+  "name": "Model Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "modelbank.in",
+  "logo": false
+ },
+ {
+  "id": "kapol",
+  "name": "Kapol Co-operative Bank",
+  "category": "Co-operative",
+  "domain": null,
+  "logo": false
+ },
+ {
+  "id": "pdcc",
+  "name": "Pune District Central Co-op Bank",
+  "category": "Co-operative",
+  "domain": "pdccbank.com",
+  "logo": false
+ },
+ {
+  "id": "mumbaidcc",
+  "name": "Mumbai District Central Co-op Bank",
+  "category": "Co-operative",
+  "domain": "mumbaidistrictbank.com",
+  "logo": false
+ },
+ {
+  "id": "mscb",
+  "name": "Maharashtra State Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "mscbank.com",
+  "logo": false
+ },
+ {
+  "id": "keralabank",
+  "name": "Kerala Bank",
+  "category": "Co-operative",
+  "domain": "keralabank.co.in",
+  "wikidata": "Q101464362",
+  "logo": false
+ },
+ {
+  "id": "tnsc",
+  "name": "Tamil Nadu State Apex Co-op Bank",
+  "category": "Co-operative",
+  "domain": "tnscbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=tnscbank.com&sz=256",
+   "sha256": "461a482c1d692f487cc4586acbce9e31d1f7de85eb99ece8971a2da41a022cfc"
+  }
+ },
+ {
+  "id": "apcob",
+  "name": "AP State Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "apcob.org",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://apcob.bank.in/wp-content/uploads/2023/10/apcoblogp-100x100.webp",
+   "sha256": "5184a13790d1da48a6b91cda73dbf34df1b49108c97067a7b1d994e2c6405210"
+  }
+ },
+ {
+  "id": "tscab",
+  "name": "Telangana State Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "tscab.org",
+  "logo": false
+ },
+ {
+  "id": "gscb",
+  "name": "Gujarat State Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "gscbank.coop",
+  "logo": false
+ },
+ {
+  "id": "delhistate",
+  "name": "Delhi State Co-operative Bank",
+  "category": "Co-operative",
+  "domain": null,
+  "logo": false
+ },
+ {
+  "id": "hpscb",
+  "name": "HP State Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "hpscb.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://hpscb.bank.in/upload/0b4K7eVc3roalLSHD7sXnp5uokOo0iHBOp7r26Ol.png",
+   "sha256": "a6ec1c37877c12752b630c0ebf998096b3d47f3f55af03f5c1bc8cfed96c146e"
+  }
+ },
+ {
+  "id": "kangra",
+  "name": "Kangra Central Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "kccb.in",
+  "logo": false
+ },
+ {
+  "id": "sutex",
+  "name": "Sutex Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "sutexbank.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://sutex.bank.in/theme/sutexbank/assets/favicons/apple-touch-icon.png",
+   "sha256": "22a729146ec52535d1d8b38b8611dfd74b129405a309a5ead58b16153c33edc7"
+  }
+ },
+ {
+  "id": "surat",
+  "name": "Surat People's Co-op Bank",
+  "category": "Co-operative",
+  "domain": "spcbl.in",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://spcbl.bank.in/theme/default/assets/favicons/apple-touch-icon.png",
+   "sha256": "14343fee314e3bb965224bcdb3bd2b7ec94e43bef4552b0fd2c7e0a5709f404c"
+  }
+ },
+ {
+  "id": "varachha",
+  "name": "Varachha Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "varachhabank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://varachha.bank.in/theme/default/assets/favicons/apple-touch-icon.png",
+   "sha256": "169b4b2362b1d38a1982f39add71d27656848f97495ad96b4fd6666563a372d9"
+  }
+ },
+ {
+  "id": "prime",
+  "name": "Prime Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "primebankindia.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=primebankindia.com&sz=256",
+   "sha256": "d1d5de70ab6c5cc19ef82d58ffe95a78cd574a8daf43f0ad31ffbfdbfdb09b0e"
+  }
+ },
+ {
+  "id": "thane",
+  "name": "Thane Bharat Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "thanebharatbank.com",
+  "logo": false
+ },
+ {
+  "id": "jalgaon",
+  "name": "Jalgaon Janata Sahakari Bank",
+  "category": "Co-operative",
+  "domain": "jjsbl.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.google.com/s2/favicons?domain=jjsbl.com&sz=256",
+   "sha256": "6ff5af50dc536f7d56755b17ef0980269f004af0d1b7fd76095a7ab70c85f2ac"
+  }
+ },
+ {
+  "id": "punepeoples",
+  "name": "Pune People's Co-operative Bank",
+  "category": "Co-operative",
+  "domain": "punepeoplesbank.com",
+  "logo": true,
+  "source": {
+   "kind": "site",
+   "url": "https://www.punepeoples.bank.in/public/assets/img/ppb_icon.png",
+   "sha256": "1161481d391cc6174b4326989427602baf1dc7f595de58808605d2926f27cd48"
+  }
+ }
+]

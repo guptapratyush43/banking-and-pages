@@ -1,0 +1,123 @@
+package com.bankingpages.data
+
+import org.json.JSONArray
+import org.json.JSONObject
+
+enum class PhotoSlot(val label: String) {
+    CHEQUE("Cancelled cheque"),
+    PASSBOOK("Passbook front page"),
+    DEBIT_FRONT("Debit card"),
+    DEBIT_BACK("Debit card (back)"),
+    CREDIT_FRONT("Credit card"),
+    CREDIT_BACK("Credit card (back)");
+
+    /** Front and back sit together in one picture; the BACK slots only hold older, separate photos. */
+    val isCard get() = this == DEBIT_FRONT || this == CREDIT_FRONT
+    val legacy get() = this == DEBIT_BACK || this == CREDIT_BACK
+}
+
+data class SecurityQA(val question: String, val answer: String)
+
+data class Account(
+    val id: String,
+    val bankId: String,
+    val bankName: String,
+    /** Only for banks the user typed in: lets the app look up their logo. */
+    val bankDomain: String? = null,
+    val holder: String = "",
+    val number: String = "",
+    val ifsc: String = "",
+    val branch: String = "",
+    /** The branch's postal address, filled in from the IFSC. */
+    val branchAddress: String = "",
+    val type: String = "Savings",
+    val customerId: String = "",
+    val mobile: String = "",
+    val email: String = "",
+    val micr: String = "",
+    val upi: String = "",
+    val netUserId: String = "",
+    val loginPassword: String = "",
+    val txnPassword: String = "",
+    val profilePassword: String = "",
+    val questions: List<SecurityQA> = emptyList(),
+    val photos: Map<PhotoSlot, String> = emptyMap(),
+    val notes: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
+) {
+    val maskedNumber: String get() = if (number.length >= 4) "•• " + number.takeLast(4) else number
+
+    /** The one-tap share text: what someone needs to send you money. */
+    fun shareText(): String = buildList {
+        add(bankName)
+        if (holder.isNotBlank()) add("Account holder: $holder")
+        if (number.isNotBlank()) add("Account number: $number")
+        if (ifsc.isNotBlank()) add("IFSC: $ifsc")
+        if (branch.isNotBlank()) add("Branch: $branch")
+        if (branchAddress.isNotBlank()) add("Branch address: $branchAddress")
+        if (mobile.isNotBlank()) add("Phone: $mobile")
+    }.joinToString("\n")
+
+    fun toJson(): JSONObject = JSONObject()
+        .put("id", id).put("bankId", bankId).put("bankName", bankName).put("bankDomain", bankDomain ?: JSONObject.NULL)
+        .put("holder", holder).put("number", number).put("ifsc", ifsc).put("branch", branch).put("branchAddress", branchAddress).put("type", type)
+        .put("customerId", customerId).put("mobile", mobile).put("email", email).put("micr", micr).put("upi", upi)
+        .put("netUserId", netUserId).put("loginPassword", loginPassword).put("txnPassword", txnPassword)
+        .put("profilePassword", profilePassword)
+        .put("questions", JSONArray().apply { questions.forEach { put(JSONObject().put("q", it.question).put("a", it.answer)) } })
+        .put("photos", JSONObject().apply { photos.forEach { (k, v) -> put(k.name, v) } })
+        .put("notes", notes).put("createdAt", createdAt).put("updatedAt", updatedAt)
+
+    companion object {
+        fun fromJson(o: JSONObject): Account {
+            val qs = o.optJSONArray("questions") ?: JSONArray()
+            val ph = o.optJSONObject("photos") ?: JSONObject()
+            return Account(
+                id = o.getString("id"), bankId = o.getString("bankId"), bankName = o.getString("bankName"),
+                bankDomain = o.optString("bankDomain").takeIf { it.isNotBlank() && it != "null" },
+                holder = o.optString("holder"), number = o.optString("number"), ifsc = o.optString("ifsc"),
+                branch = o.optString("branch"), branchAddress = o.optString("branchAddress"), type = o.optString("type", "Savings"), customerId = o.optString("customerId"),
+                mobile = o.optString("mobile"), email = o.optString("email"), micr = o.optString("micr"), upi = o.optString("upi"),
+                netUserId = o.optString("netUserId"), loginPassword = o.optString("loginPassword"),
+                txnPassword = o.optString("txnPassword"), profilePassword = o.optString("profilePassword"),
+                questions = List(qs.length()) { i -> qs.getJSONObject(i).let { SecurityQA(it.optString("q"), it.optString("a")) } },
+                photos = ph.keys().asSequence().mapNotNull { k -> runCatching { PhotoSlot.valueOf(k) }.getOrNull()?.let { it to ph.getString(k) } }.toMap(),
+                notes = o.optString("notes"), createdAt = o.optLong("createdAt"), updatedAt = o.optLong("updatedAt")
+            )
+        }
+    }
+}
+
+enum class DocKind(val label: String) {
+    AADHAAR("Aadhaar card"), PAN("PAN card"), VOTER("Voter ID"), PASSPORT("Passport"), DL("Driving licence"), OTHER("Document")
+}
+
+data class Doc(
+    val id: String,
+    val kind: DocKind,
+    val title: String,
+    val blobId: String,
+    val mime: String,
+    val fileName: String,
+    /** e-Aadhaar and some PAN PDFs are locked; kept so the app can open them. */
+    val password: String? = null,
+    val createdAt: Long = System.currentTimeMillis()
+) {
+    val isPdf get() = mime == "application/pdf"
+
+    fun toJson(): JSONObject = JSONObject()
+        .put("id", id).put("kind", kind.name).put("title", title).put("blobId", blobId).put("mime", mime)
+        .put("fileName", fileName).put("password", password ?: JSONObject.NULL).put("createdAt", createdAt)
+
+    companion object {
+        fun fromJson(o: JSONObject) = Doc(
+            id = o.getString("id"),
+            kind = runCatching { DocKind.valueOf(o.getString("kind")) }.getOrDefault(DocKind.OTHER),
+            title = o.optString("title"), blobId = o.getString("blobId"), mime = o.optString("mime", "application/pdf"),
+            fileName = o.optString("fileName", "document.pdf"),
+            password = o.optString("password").takeIf { it.isNotBlank() && it != "null" },
+            createdAt = o.optLong("createdAt")
+        )
+    }
+}

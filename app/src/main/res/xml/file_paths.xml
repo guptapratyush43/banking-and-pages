@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Short-lived decrypted copies for sharing, and the camera's capture file. Both are wiped on launch. -->
+    <cache-path name="share" path="share/" />
+    <cache-path name="camera" path="camera/" />
+</paths>

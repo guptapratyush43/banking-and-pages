@@ -1,0 +1,32 @@
+[
+ {
+  "id": "karad",
+  "pick": null,
+  "candidates": []
+ },
+ {
+  "id": "kapol",
+  "pick": null,
+  "candidates": []
+ },
+ {
+  "id": "delhistate",
+  "pick": null,
+  "candidates": []
+ },
+ {
+  "id": "woori",
+  "pick": null,
+  "candidates": [
+   {
+    "kind": "wikidata",
+    "qid": "Q494369",
+    "file": "Logo of Woori Bank.svg",
+    "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Logo_of_Woori_Bank.svg?width=512",
+    "w": 960,
+    "h": 154,
+    "sha": "e893f7b1bbfa962273ade2383da5d2093a5e965e560c81b7b5db96e225bd641d"
+   }
+  ]
+ }
+]

@@ -1,0 +1,21 @@
+# Build output
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+Apk builds/
+
+# Local machine and secrets: never commit
+local.properties
+signing/
+*.jks
+*.keystore
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Python
+__pycache__/
