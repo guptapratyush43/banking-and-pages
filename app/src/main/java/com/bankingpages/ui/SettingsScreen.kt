@@ -369,10 +369,12 @@ fun BackupSection() {
             Spacer(Modifier.height(14.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 SecondaryButton("Back up now", Icons.Outlined.CloudUpload, {
-                    AppScope.launch { runCatching { BackupManager.backupNow() }.onSuccess { toast(context, "Backed up") }.onFailure { toast(context, BackupManager.friendly(it)) } }
+                    if (state.busy != null) toast(context, "Backup/Restore process is already going on")
+                    else AppScope.launch { runCatching { BackupManager.backupNow() }.onSuccess { toast(context, "Backed up") }.onFailure { toast(context, BackupManager.friendly(it)) } }
                 }, Modifier.weight(1f))
                 SecondaryButton("Restore", Icons.Outlined.CloudDownload, {
-                    AppScope.launch {
+                    if (state.busy != null) toast(context, "Backup/Restore process is already going on")
+                    else AppScope.launch {
                         runCatching { BackupManager.remoteInfo() }
                             .onSuccess { if (it == null) toast(context, "No backup in Drive yet") else offer = it }
                             .onFailure { toast(context, BackupManager.friendly(it)) }
@@ -380,17 +382,29 @@ fun BackupSection() {
                 }, Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
-            Footnote("Everything backs up the moment you add or change it.")
+            Footnote("Every change is backed up instantly.")
         }
     }
 
     offer?.let { info ->
         WarmDialog(
             icon = Icons.Outlined.Restore, accent = scheme.primary, title = "Found your backup",
-            confirmLabel = "Restore", onConfirm = { offer = null; restorePin = true },
+            confirmLabel = "Restore", onConfirm = {
+                offer = null
+                AppScope.launch {
+                    try {
+                        val n = BackupManager.restore()
+                        toast(context, "Restored $n ${if (n == 1) "bank" else "banks"}")
+                    } catch (e: com.bankingpages.backup.NeedsPinException) {
+                        restorePin = true // only a backup made by an old version still asks
+                    } catch (e: Throwable) {
+                        toast(context, BackupManager.friendly(e))
+                    }
+                }
+            },
             dismissLabel = "Not now", onDismiss = { offer = null }
         ) {
-            DialogText("Saved ${whenText(info.modified)}. Restoring replaces what's on this phone now. You'll need the PIN you used when it was made.")
+            DialogText("Saved ${whenText(info.modified)}. Restoring replaces what's on this phone now.")
         }
     }
 
@@ -400,7 +414,7 @@ fun BackupSection() {
                 try {
                     val n = BackupManager.restore(pin)
                     restorePin = false
-                    toast(context, "Restored $n ${if (n == 1) "bank" else "banks"}. That PIN now opens the app")
+                    toast(context, "Restored $n ${if (n == 1) "bank" else "banks"}")
                     true
                 } catch (e: WrongPasswordException) {
                     false

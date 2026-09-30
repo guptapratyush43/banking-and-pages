@@ -37,6 +37,7 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -74,7 +75,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bankingpages.data.Account
 import com.bankingpages.data.AppSettings
 import com.bankingpages.data.BankCatalog
-import com.bankingpages.data.PhotoSlot
 import com.bankingpages.data.Pin
 import com.bankingpages.data.Vault
 import com.bankingpages.logo.LogoStore
@@ -90,7 +90,7 @@ sealed class Screen(val depth: Int) {
     data class Detail(val id: String) : Screen(1)
     data class DocView(val id: String) : Screen(1)
     data class Editor(val id: String?, val bank: PickedBank?) : Screen(2)
-    data class Photo(val id: String, val slot: PhotoSlot) : Screen(2)
+    data class Photo(val id: String, val blobId: String, val label: String) : Screen(2)
 }
 
 class NavViewModel : ViewModel() {
@@ -175,7 +175,7 @@ private fun MainNav(nav: NavViewModel) {
             if (forward) (slideInHorizontally(spec) { it } togetherWith slideOutHorizontally(spec) { -it / 4 }).apply { targetContentZIndex = 1f }
             else (slideInHorizontally(spec) { -it / 4 } togetherWith slideOutHorizontally(spec) { it }).apply { targetContentZIndex = -1f }
         },
-        contentKey = { it::class to ((it as? Screen.Detail)?.id ?: (it as? Screen.Editor)?.id ?: (it as? Screen.Photo)?.slot ?: (it as? Screen.DocView)?.id) },
+        contentKey = { it::class to ((it as? Screen.Detail)?.id ?: (it as? Screen.Editor)?.id ?: (it as? Screen.Photo)?.blobId ?: (it as? Screen.DocView)?.id) },
         label = "screens"
     ) { s ->
         when (s) {
@@ -222,14 +222,13 @@ private fun MainNav(nav: NavViewModel) {
                     a, onBack = home,
                     onEdit = { go(Screen.Editor(a.id, null)) },
                     onDelete = { Vault.deleteAccount(a.id); toast(context, "${a.bankName} deleted"); home() },
-                    onOpenPhoto = { go(Screen.Photo(a.id, it)) }
+                    onOpenPhoto = { blob, label -> go(Screen.Photo(a.id, blob, label)) }
                 )
             }
             is Screen.Photo -> {
                 val a = accounts.firstOrNull { it.id == s.id }
-                val blob = a?.photos?.get(s.slot)
-                if (a == null || blob == null) LaunchedEffect(Unit) { home() }
-                else PhotoViewer(s.slot.label, a.bankName, blob, "${a.bankName} - ${s.slot.label}.jpg", onBack = { go(Screen.Detail(a.id)) })
+                if (a == null || s.blobId !in a.allBlobs) LaunchedEffect(Unit) { home() }
+                else PhotoViewer(s.label, a.bankName, s.blobId, "${a.bankName} - ${s.label}.jpg", onBack = { go(Screen.Detail(a.id)) })
             }
             is Screen.DocView -> {
                 val d = docs.firstOrNull { it.id == s.id }
@@ -274,7 +273,7 @@ private val TabHeight = 54.dp
 private fun GlassBar(backdrop: LayerBackdrop, selected: Int, onSelect: (Int) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val glass = Build.VERSION.SDK_INT >= 31
-    val surface = scheme.surface.copy(alpha = if (glass) 0.55f else 0.96f)
+    val surface = scheme.surface.copy(alpha = if (glass) 0.4f else 0.96f)
     val x by animateDpAsState(TabWidth * selected, Motion.bouncy(Dp.VisibilityThreshold), label = "tabPill")
     Box(
         Modifier
@@ -291,7 +290,7 @@ private fun GlassBar(backdrop: LayerBackdrop, selected: Int, onSelect: (Int) -> 
             )
             .padding(6.dp)
     ) {
-        Box(Modifier.offset { IntOffset(x.roundToPx(), 0) }.size(TabWidth, TabHeight).background(AccentBrush, RoundedCornerShape(18.dp)))
+        Box(Modifier.offset { IntOffset(x.roundToPx(), 0) }.size(TabWidth, TabHeight).clip(RoundedCornerShape(18.dp)).background(AccentBrush).gloss(RoundedCornerShape(18.dp)))
         Row {
             listOf(Icons.Rounded.AccountBalanceWallet to "Vault", Icons.Rounded.Person to "Profile").forEachIndexed { i, (icon, label) ->
                 val tint by animateColorAsState(if (i == selected) Color.White else scheme.onSurfaceVariant, label = "tabTint")

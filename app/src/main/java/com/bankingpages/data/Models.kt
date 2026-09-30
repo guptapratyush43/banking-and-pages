@@ -18,6 +18,9 @@ enum class PhotoSlot(val label: String) {
 
 data class SecurityQA(val question: String, val answer: String)
 
+/** A second, third... debit or credit card: front and back in one picture, like the first. */
+data class CardShot(val id: String, val credit: Boolean, val blobId: String)
+
 data class Account(
     val id: String,
     val bankId: String,
@@ -42,11 +45,31 @@ data class Account(
     val profilePassword: String = "",
     val questions: List<SecurityQA> = emptyList(),
     val photos: Map<PhotoSlot, String> = emptyMap(),
+    val cards: List<CardShot> = emptyList(),
     val notes: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
     val maskedNumber: String get() = if (number.length >= 4) "•• " + number.takeLast(4) else number
+
+    /** Every photo this account holds, for clean-up and backup. */
+    val allBlobs: List<String> get() = photos.values + cards.map { it.blobId }
+
+    /**
+     * Photo places are named by key: "s:CHEQUE" is a fixed slot, "n:d" / "n:c" a new
+     * debit / credit card, "x:<id>" an extra card already saved.
+     */
+    fun withPhoto(key: String, blobId: String): Account = when {
+        key.startsWith("s:") -> copy(photos = photos + (PhotoSlot.valueOf(key.drop(2)) to blobId))
+        key == "n:d" || key == "n:c" -> copy(cards = cards + CardShot(java.util.UUID.randomUUID().toString(), key == "n:c", blobId))
+        else -> this
+    }
+
+    fun withoutPhoto(key: String): Account = when {
+        key.startsWith("s:") -> copy(photos = photos - PhotoSlot.valueOf(key.drop(2)))
+        key.startsWith("x:") -> copy(cards = cards.filterNot { it.id == key.drop(2) })
+        else -> this
+    }
 
     /** Branch name and its address as one line. */
     val branchLine: String get() = listOf(branch, branchAddress).filter { it.isNotBlank() }.joinToString(", ")
@@ -70,12 +93,14 @@ data class Account(
         .put("profilePassword", profilePassword)
         .put("questions", JSONArray().apply { questions.forEach { put(JSONObject().put("q", it.question).put("a", it.answer)) } })
         .put("photos", JSONObject().apply { photos.forEach { (k, v) -> put(k.name, v) } })
+        .put("cards", JSONArray().apply { cards.forEach { put(JSONObject().put("id", it.id).put("credit", it.credit).put("blob", it.blobId)) } })
         .put("notes", notes).put("createdAt", createdAt).put("updatedAt", updatedAt)
 
     companion object {
         fun fromJson(o: JSONObject): Account {
             val qs = o.optJSONArray("questions") ?: JSONArray()
             val ph = o.optJSONObject("photos") ?: JSONObject()
+            val cs = o.optJSONArray("cards") ?: JSONArray()
             return Account(
                 id = o.getString("id"), bankId = o.getString("bankId"), bankName = o.getString("bankName"),
                 bankDomain = o.optString("bankDomain").takeIf { it.isNotBlank() && it != "null" },
@@ -86,6 +111,7 @@ data class Account(
                 txnPassword = o.optString("txnPassword"), profilePassword = o.optString("profilePassword"),
                 questions = List(qs.length()) { i -> qs.getJSONObject(i).let { SecurityQA(it.optString("q"), it.optString("a")) } },
                 photos = ph.keys().asSequence().mapNotNull { k -> runCatching { PhotoSlot.valueOf(k) }.getOrNull()?.let { it to ph.getString(k) } }.toMap(),
+                cards = List(cs.length()) { i -> cs.getJSONObject(i).let { CardShot(it.getString("id"), it.optBoolean("credit"), it.getString("blob")) } },
                 notes = o.optString("notes"), createdAt = o.optLong("createdAt"), updatedAt = o.optLong("updatedAt")
             )
         }

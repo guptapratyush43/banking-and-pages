@@ -7,9 +7,22 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,7 +64,6 @@ import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -83,7 +95,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.bankingpages.data.Account
-import com.bankingpages.data.PhotoSlot
 import com.bankingpages.data.SecurityQA
 import com.bankingpages.data.Vault
 import com.bankingpages.files.Media
@@ -126,7 +137,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
     val questions = remember { mutableStateListOf<SecurityQA>().apply { addAll(initial.questions) } }
     // Photos taken during this edit; thrown away again if the edit is abandoned.
     val added = remember { mutableListOf<String>() }
-    var busySlot by remember { mutableStateOf<PhotoSlot?>(null) }
+    var busyKey by remember { mutableStateOf<String?>(null) }
     var picking by rememberSaveable { mutableStateOf(false) }
     var confirmLeave by remember { mutableStateOf(false) }
     val seen = remember { mutableSetOf<Any>() }
@@ -134,7 +145,20 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
     val scroll = rememberScrollState()
     // Where each chapter starts in the scrolling form, for the rail to jump to.
     val tops = remember { mutableStateMapOf<Int, Int>() }
-    val current by remember { derivedStateOf { tops.filter { it.value <= scroll.value + 260 }.keys.maxOrNull() ?: 0 } }
+    val reading by remember {
+        derivedStateOf {
+            // At the very bottom it is the last chapter, which can never reach the top of the screen.
+            if (scroll.maxValue > 0 && scroll.value >= scroll.maxValue - 12) CHAPTERS.lastIndex
+            else tops.filter { it.value <= scroll.value + 420 }.keys.maxOrNull() ?: 0
+        }
+    }
+    // A chapter picked from the bar stays lit (the last ones can't scroll to the top) until you scroll by hand.
+    var picked by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(scroll) { scroll.interactionSource.interactions.collect { if (it is DragInteraction.Start) picked = null } }
+    val current = picked ?: reading
+    // Bumped on every jump so the chosen card breathes.
+    var pulse by remember { mutableStateOf(0 to -1) }
+    val imeOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     val backdrop = rememberLayerBackdrop()
 
     val changed = a != initial || questions.toList() != initial.questions
@@ -156,32 +180,24 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
             Box(Modifier.weight(1f)) {
                 Column(
                     Modifier.fillMaxSize().layerBackdrop(backdrop).verticalScroll(scroll)
-                        .padding(start = 20.dp, end = 66.dp, top = 8.dp, bottom = 24.dp)
+                        .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = if (imeOpen) 24.dp else 146.dp)
                 ) {
                     // The bank itself, with a pencil to pick another.
                     WarmCard(modifier = Modifier.entrance(0, "bank", seen)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             BankLogo(a.bankId, a.bankName, 56.dp)
                             Spacer(Modifier.width(14.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(a.bankName, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface)
-                                RowBody("Its logo keeps itself up to date")
-                            }
+                            Text(a.bankName, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, modifier = Modifier.weight(1f))
                             Spacer(Modifier.width(8.dp))
                             CardAction(Icons.Rounded.Edit, "Change bank", { picking = true }, Modifier.width(44.dp))
                         }
                     }
 
-                    Section(0, tops, seen) {
+                    Section(0, tops, seen, pulse) {
                         WarmField(a.customerId, { a = a.copy(customerId = it) }, "Customer ID / CIF", leading = Icons.Outlined.Badge, keyboard = next())
                     }
 
-                    Section(1, tops, seen, action = {
-                        CardAction(Icons.Rounded.ContentCopy, "Copy account details", {
-                            copy(context, "Account details", a.shareText())
-                            if (Build.VERSION.SDK_INT >= 33) toast(context, "Account details copied")
-                        }, Modifier.width(44.dp), filled = false)
-                    }) {
+                    Section(1, tops, seen, pulse) {
                         WarmField(a.holder, { a = a.copy(holder = it) }, "Account holder name", leading = Icons.Outlined.Person, keyboard = words())
                         Gap()
                         WarmField(a.number, { a = a.copy(number = it.filter(Char::isLetterOrDigit)) }, "Account number", leading = Icons.Outlined.Numbers,
@@ -205,7 +221,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         }
                     }
 
-                    Section(2, tops, seen) {
+                    Section(2, tops, seen, pulse) {
                         WarmField(a.mobile, { a = a.copy(mobile = it.filter { c -> c.isDigit() || c == '+' || c == ' ' }) }, "Registered mobile", leading = Icons.Outlined.Phone,
                             keyboard = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next))
                         Gap()
@@ -213,7 +229,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                             keyboard = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next))
                     }
 
-                    Section(3, tops, seen) {
+                    Section(3, tops, seen, pulse) {
                         WarmField(a.netUserId, { a = a.copy(netUserId = it) }, "User ID", leading = Icons.Outlined.AccountCircle, keyboard = next())
                         Gap()
                         SecretField(a.loginPassword, { a = a.copy(loginPassword = it) }, "Login password")
@@ -223,7 +239,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         SecretField(a.profilePassword, { a = a.copy(profilePassword = it) }, "Profile password (if any)")
                     }
 
-                    Section(4, tops, seen) {
+                    Section(4, tops, seen, pulse) {
                         Column(Modifier.animateContentSize(Motion.smooth())) {
                             questions.forEachIndexed { i, qa ->
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -244,43 +260,52 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         }
                     }
 
-                    Section(5, tops, seen) {
+                    Section(5, tops, seen, pulse) {
                         PhotoGrid(
-                            photos = a.photos,
-                            fileLabel = a.bankName,
-                            onOpen = {},
-                            onAdd = { slot, uris ->
-                                busySlot = slot
+                            account = a,
+                            onOpen = { _, _ -> },
+                            onAdd = { key, uris ->
+                                busyKey = key
                                 scope.launch {
                                     runCatching { Media.importScan(uris) }
-                                        .onSuccess { id -> added += id; a = a.copy(photos = a.photos + (slot to id)) }
+                                        .onSuccess { id -> added += id; a = a.withPhoto(key, id) }
                                         .onFailure { toast(context, it.message ?: "Couldn't add that photo") }
-                                    busySlot = null
+                                    busyKey = null
                                 }
                             },
-                            onRemove = { slot -> a = a.copy(photos = a.photos - slot) },
-                            busySlot = busySlot
+                            onRemove = { key -> a = a.withoutPhoto(key) },
+                            busyKey = busyKey
                         )
                     }
 
-                    Section(6, tops, seen) {
+                    Section(6, tops, seen, pulse) {
                         WarmField(a.notes, { a = a.copy(notes = it) }, "Anything else to remember", leading = Icons.Outlined.EditNote, singleLine = false, minLines = 3,
                             keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
                     }
                 }
 
-                SideRail(backdrop, current, Modifier.align(Alignment.CenterEnd).padding(end = 10.dp)) { i ->
-                    tops[i]?.let { y -> scope.launch { scroll.animateScrollTo((y - 24).coerceAtLeast(0), Motion.smooth()) } }
+                // The chapter bar and Save float over the form; the page fades out softly behind them.
+                val bg = scheme.background
+                androidx.compose.animation.AnimatedVisibility(!imeOpen, Modifier.align(Alignment.BottomCenter), enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                        .background(Brush.verticalGradient(0f to bg.copy(alpha = 0f), 0.3f to bg.copy(alpha = 0.72f), 0.62f to bg, 1f to bg))
+                        .padding(start = 20.dp, end = 20.dp, top = 46.dp, bottom = 14.dp)
+                ) {
+                    ChapterBar(backdrop, current, Modifier.padding(bottom = 12.dp)) { i ->
+                        picked = i
+                        pulse = pulse.first + 1 to i
+                        tops[i]?.let { y -> scope.launch { scroll.animateScrollTo((y - 24).coerceAtLeast(0), Motion.smooth()) } }
+                    }
+                    PrimaryButton(if (isNew) "Save bank" else "Save changes", Icons.Outlined.Check, onClick = {
+                        val final = a.copy(questions = questions.filter { it.question.isNotBlank() || it.answer.isNotBlank() }, updatedAt = System.currentTimeMillis())
+                        // Blobs dropped again before saving are cleared here too.
+                        added.filter { it !in final.allBlobs }.forEach(Vault::deleteBlob)
+                        onSave(final)
+                    }, modifier = Modifier.fillMaxWidth())
                 }
-            }
-            // Save stays in reach at the bottom, above the keyboard.
-            Box(Modifier.fillMaxWidth().background(scheme.background).padding(horizontal = 20.dp, vertical = 14.dp)) {
-                PrimaryButton(if (isNew) "Save bank" else "Save changes", Icons.Outlined.Check, onClick = {
-                    val final = a.copy(questions = questions.filter { it.question.isNotBlank() || it.answer.isNotBlank() }, updatedAt = System.currentTimeMillis())
-                    // Blobs dropped again before saving are cleared here too.
-                    added.filter { it !in final.photos.values }.forEach(Vault::deleteBlob)
-                    onSave(final)
-                }, modifier = Modifier.fillMaxWidth())
+                }
             }
         }
 
@@ -307,31 +332,32 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
 }
 
 /**
- * The floating glass rail on the right edge: one icon per chapter, in order. The one
- * you are reading is lit; tap any to glide to it.
+ * The floating glass bar above Save: one icon per chapter, in order. The chapter in
+ * view is lit; tap any to glide to it.
  */
 @Composable
-private fun SideRail(backdrop: LayerBackdrop, current: Int, modifier: Modifier = Modifier, onJump: (Int) -> Unit) {
+private fun ChapterBar(backdrop: LayerBackdrop, current: Int, modifier: Modifier = Modifier, onJump: (Int) -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val surface = scheme.surface.copy(alpha = if (Build.VERSION.SDK_INT >= 31) 0.6f else 0.96f)
-    Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+    // Thin enough that the form shows through and the glass reads as glass.
+    val surface = scheme.surface.copy(alpha = if (Build.VERSION.SDK_INT >= 31) 0.38f else 0.96f)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(24.dp) },
-                effects = { vibrancy(); blur(8.dp.toPx()); lens(10.dp.toPx(), 20.dp.toPx()) },
+                effects = { vibrancy(); blur(6.dp.toPx()); lens(12.dp.toPx(), 24.dp.toPx()) },
                 onDrawSurface = { drawRect(surface) }
             )
             .padding(5.dp)
     ) {
         CHAPTERS.forEachIndexed { i, c ->
             val on = i == current
-            val glow by animateFloatAsState(if (on) 1f else 0f, Motion.bouncy(), label = "railOn")
-            val tint by animateColorAsState(if (on) Color.White else scheme.onSurfaceVariant, label = "railTint")
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(38.dp).bounceClick(0.85f) { onJump(i) }) {
-                Box(Modifier.size(38.dp).graphicsLayer { alpha = glow.coerceIn(0f, 1f); val s = 0.6f + 0.4f * glow; scaleX = s; scaleY = s }.background(AccentBrush, CircleShape))
-                Icon(c.icon, c.title, tint = tint, modifier = Modifier.size(19.dp))
+            val glow by animateFloatAsState(if (on) 1f else 0f, Motion.bouncy(), label = "barOn")
+            val tint by animateColorAsState(if (on) Color.White else scheme.onSurface, label = "barTint")
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).bounceClick(0.85f) { onJump(i) }) {
+                Box(Modifier.size(40.dp).graphicsLayer { alpha = glow.coerceIn(0f, 1f); val s = 0.6f + 0.4f * glow; scaleX = s; scaleY = s }.background(AccentBrush, CircleShape).gloss(CircleShape))
+                Icon(c.icon, c.title, tint = tint, modifier = Modifier.size(20.dp))
             }
         }
     }
@@ -339,10 +365,35 @@ private fun SideRail(backdrop: LayerBackdrop, current: Int, modifier: Modifier =
 
 /** One chapter of the form: its own card, headed by a coloured icon, with an optional button top right. */
 @Composable
-private fun Section(index: Int, tops: MutableMap<Int, Int>, seen: MutableSet<Any>, action: (@Composable () -> Unit)? = null, content: @Composable () -> Unit) {
+private fun Section(
+    index: Int, tops: MutableMap<Int, Int>, seen: MutableSet<Any>, pulse: Pair<Int, Int>,
+    action: (@Composable () -> Unit)? = null, content: @Composable () -> Unit
+) {
     val chapter = CHAPTERS[index]
+    // Picked from the bar: the card breathes once, ringed in its own colour, so the eye lands on it.
+    val breath = remember { Animatable(0f) }
+    LaunchedEffect(pulse) {
+        if (pulse.second == index && pulse.first > 0) {
+            delay(180)
+            breath.animateTo(1f, tween(360)); breath.animateTo(0f, tween(520))
+        }
+    }
     Spacer(Modifier.height(18.dp))
-    WarmCard(modifier = Modifier.onGloballyPositioned { tops[index] = it.positionInParent().y.toInt() }.entrance(index + 1, chapter.title, seen)) {
+    WarmCard(
+        modifier = Modifier
+            .onGloballyPositioned { tops[index] = it.positionInParent().y.toInt() }
+            .entrance(index + 1, chapter.title, seen)
+            .graphicsLayer { val s = 1f + 0.025f * breath.value; scaleX = s; scaleY = s }
+            .drawWithContent {
+                drawContent()
+                val v = breath.value
+                if (v > 0f) {
+                    val r = CornerRadius(18.dp.toPx())
+                    drawRoundRect(chapter.tint.copy(alpha = 0.10f * v), cornerRadius = r)
+                    drawRoundRect(chapter.tint.copy(alpha = v), cornerRadius = r, style = Stroke(3.dp.toPx()))
+                }
+            }
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBubble(chapter.icon, size = 38.dp, iconSize = 20.dp, background = chapter.tint, tint = Color.White)
             Spacer(Modifier.width(12.dp))

@@ -45,7 +45,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bankingpages.data.Account
-import com.bankingpages.data.PhotoSlot
 import com.bankingpages.data.Pin
 import com.bankingpages.data.Vault
 import com.bankingpages.files.Media
@@ -64,13 +63,13 @@ fun copy(context: Context, label: String, text: String, sensitive: Boolean = fal
 }
 
 @Composable
-fun DetailScreen(a: Account, onBack: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, onOpenPhoto: (PhotoSlot) -> Unit) {
+fun DetailScreen(a: Account, onBack: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, onOpenPhoto: (blobId: String, label: String) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val seen = remember { mutableSetOf<Any>() }
     var confirmDelete by remember { mutableStateOf(false) }
-    var busySlot by remember { mutableStateOf<PhotoSlot?>(null) }
+    var busyKey by remember { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxSize().background(scheme.background)) {
         TopBar(a.bankName, onBack) {
@@ -123,21 +122,19 @@ fun DetailScreen(a: Account, onBack: () -> Unit, onEdit: () -> Unit, onDelete: (
             Column(Modifier.padding(horizontal = 20.dp).entrance(4, "photos", seen)) {
                 SectionLabel("Documents")
                 PhotoGrid(
-                    photos = a.photos,
-                    fileLabel = a.bankName,
+                    account = a,
                     onOpen = onOpenPhoto,
-                    onAdd = { slot, uris ->
-                        busySlot = slot
+                    onAdd = { key, uris ->
+                        busyKey = key
                         scope.launch {
                             runCatching { Media.importScan(uris) }
-                                .onSuccess { id -> Vault.saveAccount(a.copy(photos = a.photos + (slot to id), updatedAt = System.currentTimeMillis())) }
+                                .onSuccess { id -> Vault.saveAccount(a.withPhoto(key, id).copy(updatedAt = System.currentTimeMillis())) }
                                 .onFailure { toast(context, it.message ?: "Couldn't add that photo") }
-                            busySlot = null
+                            busyKey = null
                         }
                     },
                     onRemove = null,
-                    busySlot = busySlot,
-                    actions = true
+                    busyKey = busyKey
                 )
             }
 

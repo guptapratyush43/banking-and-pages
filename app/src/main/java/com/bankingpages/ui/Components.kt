@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -88,6 +89,28 @@ fun Modifier.softShadow(shape: Shape, elevation: Dp = 14.dp) = composed {
         spotColor = Color.Black.copy(alpha = if (dark) 0.6f else 0.13f)
     )
 }
+
+/**
+ * Clear glass for quiet controls: a see-through pane that is brighter at the top, with a
+ * lit rim along its upper edge. Used by every secondary button, round icon and chip.
+ */
+fun Modifier.glass(shape: Shape, tint: Color? = null) = composed {
+    val dark = isSystemInDarkTheme()
+    val scheme = MaterialTheme.colorScheme
+    val base = tint ?: if (dark) Color.White.copy(alpha = 0.10f) else scheme.surfaceVariant.copy(alpha = 0.78f)
+    val rim = if (dark) 0.34f else 0.95f
+    clip(shape)
+        .background(Brush.verticalGradient(listOf(base.copy(alpha = (base.alpha * 1.15f).coerceAtMost(1f)), base.copy(alpha = base.alpha * 0.62f))))
+        .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = rim), Color.White.copy(alpha = rim * 0.12f), scheme.outline.copy(alpha = 0.55f))), shape)
+}
+
+/** Tinted glass for filled controls: a soft sheen over the top half and a bright rim, laid over their colour. */
+fun Modifier.gloss(shape: Shape) = this
+    .drawWithContent {
+        drawContent()
+        drawRect(Brush.verticalGradient(0f to Color.White.copy(alpha = 0.26f), 0.5f to Color.White.copy(alpha = 0.04f), 1f to Color.Transparent))
+    }
+    .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.65f), Color.White.copy(alpha = 0.06f))), shape)
 
 /** The soft, floating card every screen is built from. */
 @Composable
@@ -164,8 +187,10 @@ fun AddPill(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .bounceClick(0.92f, onClick = onClick)
+            .softShadow(Pill, 8.dp)
             .clip(Pill)
             .background(AccentBrush)
+            .gloss(Pill)
             .padding(start = 10.dp, end = 14.dp, top = 8.dp, bottom = 8.dp)
     ) {
         Icon(Icons.Rounded.Add, null, tint = Color.White, modifier = Modifier.size(18.dp))
@@ -198,8 +223,8 @@ fun RoundIcon(icon: ImageVector, description: String, onClick: () -> Unit, modif
             .size(size)
             .bounceClick(0.88f, onClick = onClick)
             .softShadow(CircleShape, 8.dp)
-            .background(scheme.surface, CircleShape)
-            .border(0.5.dp, scheme.outline.copy(alpha = 0.55f), CircleShape)
+            .background(scheme.surface.copy(alpha = 0.72f), CircleShape)
+            .glass(CircleShape, Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.10f else 0.5f))
     ) {
         Icon(icon, contentDescription = description, tint = tint, modifier = Modifier.size(size * 0.45f))
     }
@@ -239,6 +264,7 @@ fun PrimaryButton(text: String, icon: ImageVector?, onClick: () -> Unit, modifie
             .softShadow(Pill, 10.dp)
             .clip(Pill)
             .background(brush)
+            .gloss(Pill)
             .height(ButtonHeight)
             .padding(horizontal = 22.dp)
     ) {
@@ -258,8 +284,7 @@ fun SecondaryButton(text: String, icon: ImageVector?, onClick: () -> Unit, modif
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .bounceClick(0.95f, onClick = onClick)
-            .clip(Pill)
-            .background(scheme.surfaceVariant)
+            .glass(Pill)
             .height(ButtonHeight)
             .padding(horizontal = 20.dp)
     ) {
@@ -280,8 +305,7 @@ fun SmallButton(text: String, icon: ImageVector?, onClick: () -> Unit, modifier:
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .bounceClick(0.93f, onClick = onClick)
-            .clip(Pill)
-            .background(scheme.primary.copy(alpha = 0.12f))
+            .glass(Pill, scheme.primary.copy(alpha = 0.16f))
             .padding(horizontal = 14.dp, vertical = 9.dp)
     ) {
         icon?.let { Icon(it, null, tint = scheme.primary, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)) }
@@ -485,12 +509,10 @@ fun DialogText(text: String) {
 @Composable
 fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val bg: Brush = if (selected) AccentBrush else SolidColor(scheme.surfaceVariant)
     Box(
         Modifier
             .bounceClick(0.92f, onClick = onClick)
-            .clip(Pill)
-            .background(bg)
+            .then(if (selected) Modifier.clip(Pill).background(AccentBrush).gloss(Pill) else Modifier.glass(Pill))
             .padding(horizontal = 15.dp, vertical = 9.dp)
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp), color = if (selected) Color.White else scheme.onSurfaceVariant)
@@ -510,8 +532,7 @@ fun CardAction(icon: ImageVector, description: String, onClick: () -> Unit, modi
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .bounceClick(0.9f, onClick = onClick)
-            .clip(shape)
-            .background(if (filled) AccentBrush else SolidColor(scheme.surfaceVariant))
+            .then(if (filled) Modifier.clip(shape).background(AccentBrush).gloss(shape) else Modifier.glass(shape))
             .height(38.dp)
             .padding(horizontal = 10.dp)
     ) {

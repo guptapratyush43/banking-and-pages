@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AddCard
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.DocumentScanner
@@ -57,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import com.bankingpages.data.Account
 import com.bankingpages.data.PhotoSlot
 import com.bankingpages.data.Pin
 import com.bankingpages.files.Media
@@ -120,64 +123,95 @@ private fun PhotoSlot.look() = when (this) {
     PhotoSlot.CREDIT_FRONT, PhotoSlot.CREDIT_BACK -> SlotLook(Icons.Rounded.Payments, Color(0xFF8A55E0), "Scan front, then back")
 }
 
+private class Tile(val key: String, val label: String, val look: SlotLook, val blobId: String?, val card: Boolean)
+
 /**
- * Cheque, passbook, debit card and credit card as a two-column grid, each with its
- * own icon and colour. An empty one opens the scanner. A card is scanned twice, the
- * front and then the back, and both are kept as one picture. With [actions], a filled
- * tile carries its own small Share and Download.
+ * Cheque, passbook and cards as a two-column grid, each with its own icon and colour.
+ * An empty tile opens the scanner; a card is scanned twice, front then back, and kept
+ * as one picture. "Add another card" takes as many debit and credit cards as you have.
+ * Every filled tile carries its own small Share and Download.
  */
 @Composable
 fun PhotoGrid(
-    photos: Map<PhotoSlot, String>,
-    fileLabel: String,
-    onOpen: (PhotoSlot) -> Unit,
-    onAdd: (PhotoSlot, List<Uri>) -> Unit,
-    onRemove: ((PhotoSlot) -> Unit)?,
-    busySlot: PhotoSlot? = null,
-    actions: Boolean = false
+    account: Account,
+    onOpen: (blobId: String, label: String) -> Unit,
+    onAdd: (key: String, uris: List<Uri>) -> Unit,
+    onRemove: ((key: String) -> Unit)?,
+    busyKey: String? = null
 ) {
     val context = LocalContext.current
-    var target by rememberSaveable { mutableStateOf<PhotoSlot?>(null) }
+    val scheme = MaterialTheme.colorScheme
+    var target by rememberSaveable { mutableStateOf<String?>(null) }
     // A card's front, waiting for its back.
     var front by rememberSaveable { mutableStateOf<String?>(null) }
+    var addMenu by remember { mutableStateOf(false) }
+    fun isCard(key: String) = key.startsWith("n:") || (key.startsWith("s:") && PhotoSlot.valueOf(key.drop(2)).isCard)
     val again = remember { arrayOfNulls<Scanner>(1) }
     val scanner = rememberScanner(
         // Backing out of the second scan keeps the front on its own.
         onCancel = { front?.let { f -> target?.let { onAdd(it, listOf(Uri.parse(f))) } }; front = null }
     ) { pages, _ ->
-        val slot = target
+        val key = target
         val page = pages.firstOrNull()
-        if (slot != null && page != null) {
-            if (slot.isCard && front == null) {
+        if (key != null && page != null) {
+            if (isCard(key) && front == null) {
                 front = page.toString()
                 toast(context, "Front saved. Now scan the back")
                 again[0]?.scan?.invoke(1, false)
             } else {
-                onAdd(slot, listOfNotNull(front?.let(Uri::parse), page))
+                onAdd(key, listOfNotNull(front?.let(Uri::parse), page))
                 front = null
             }
         }
     }
     again[0] = scanner
-    val slots = PhotoSlot.entries.filter { !it.legacy || it in photos }
+    fun start(key: String) {
+        target = key; front = null
+        if (isCard(key)) toast(context, "Scan the front first")
+        scanner.scan(1, false)
+    }
+
+    val tiles = buildList {
+        PhotoSlot.entries.filter { !it.legacy || it in account.photos }.forEach { add(Tile("s:${it.name}", it.label, it.look(), account.photos[it], it.isCard)) }
+        var debit = 1; var credit = 1
+        account.cards.forEach { c ->
+            val n = if (c.credit) ++credit else ++debit
+            add(Tile("x:${c.id}", "${if (c.credit) "Credit" else "Debit"} Card $n", (if (c.credit) PhotoSlot.CREDIT_FRONT else PhotoSlot.DEBIT_FRONT).look(), c.blobId, true))
+        }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        slots.chunked(2).forEach { pair ->
+        // The last cell is always "Add another card".
+        (tiles + null).chunked(2).forEach { pair ->
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                pair.forEach { slot ->
-                    PhotoTile(
-                        slot, photos[slot], busy = busySlot == slot,
-                        fileName = "$fileLabel - ${slot.label}.jpg", actions = actions,
-                        onClick = {
-                            if (photos[slot] != null) onOpen(slot)
-                            else {
-                                target = slot; front = null
-                                if (slot.isCard) toast(context, "Scan the front first")
-                                scanner.scan(1, false)
-                            }
-                        },
-                        onRemove = if (onRemove != null && photos[slot] != null) ({ onRemove(slot) }) else null,
+                pair.forEach { t ->
+                    if (t != null) PhotoTile(
+                        t, busy = busyKey == t.key, fileName = "${account.bankName} - ${t.label}.jpg",
+                        onClick = { if (t.blobId != null) onOpen(t.blobId, t.label) else start(t.key) },
+                        onRemove = if (onRemove != null && t.blobId != null) ({ onRemove(t.key) }) else null,
                         modifier = Modifier.weight(1f)
-                    )
+                    ) else Box(Modifier.weight(1f)) {
+                        val shape = RoundedCornerShape(16.dp)
+                        val tint = scheme.primary
+                        Column(
+                            Modifier.fillMaxWidth().aspectRatio(1.4f).bounceClick(0.95f) { addMenu = true }
+                                .clip(shape).background(tint.copy(alpha = 0.13f)).border(0.5.dp, tint.copy(alpha = 0.35f), shape).padding(12.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconBubble(Icons.Rounded.AddCard, size = 34.dp, iconSize = 18.dp, background = tint, tint = Color.White)
+                                Spacer(Modifier.weight(1f))
+                                if (busyKey?.startsWith("n:") == true) CircularProgressIndicator(strokeWidth = 2.dp, color = tint, modifier = Modifier.size(18.dp))
+                                else Icon(Icons.Rounded.Add, null, tint = tint, modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(Modifier.weight(1f))
+                            Text("Add Another Card", style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("Debit or credit", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1)
+                        }
+                        WarmMenu(addMenu, { addMenu = false }) {
+                            MenuItem("Debit card", Icons.Rounded.CreditCard) { addMenu = false; start("n:d") }
+                            HairLine(Modifier.padding(horizontal = 12.dp))
+                            MenuItem("Credit card", Icons.Rounded.Payments) { addMenu = false; start("n:c") }
+                        }
+                    }
                 }
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
             }
@@ -190,19 +224,17 @@ private fun MiniAction(icon: ImageVector, description: String, onClick: () -> Un
     val scheme = MaterialTheme.colorScheme
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(30.dp).bounceClick(0.85f, onClick = onClick).background(scheme.surface, CircleShape)
+        modifier = Modifier.size(30.dp).bounceClick(0.85f, onClick = onClick).background(scheme.surface.copy(alpha = 0.78f), CircleShape).glass(CircleShape, Color.White.copy(alpha = 0.25f))
     ) { Icon(icon, description, tint = scheme.primary, modifier = Modifier.size(15.dp)) }
 }
 
 @Composable
-private fun PhotoTile(
-    slot: PhotoSlot, blobId: String?, busy: Boolean, fileName: String, actions: Boolean,
-    onClick: () -> Unit, onRemove: (() -> Unit)?, modifier: Modifier = Modifier
-) {
+private fun PhotoTile(t: Tile, busy: Boolean, fileName: String, onClick: () -> Unit, onRemove: (() -> Unit)?, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val look = slot.look()
+    val look = t.look
+    val blobId = t.blobId
     val img = rememberPhoto(blobId, 640)
     val shape = RoundedCornerShape(16.dp)
     Box(
@@ -215,7 +247,7 @@ private fun PhotoTile(
     ) {
         if (img != null && blobId != null) {
             // A card's picture is front above back, so the tile shows the front.
-            Image(img, slot.label, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
+            Image(img, t.label, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()
@@ -224,14 +256,14 @@ private fun PhotoTile(
             ) {
                 Icon(look.icon, null, tint = Color.White, modifier = Modifier.size(15.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(slot.label, style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(t.label, style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            if (actions) Row(Modifier.align(Alignment.TopEnd).padding(7.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                MiniAction(Icons.Rounded.Share, "Share ${slot.label}") {
+            Row(Modifier.align(Alignment.TopStart).padding(7.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                MiniAction(Icons.Rounded.Share, "Share ${t.label}") {
                     Pin.awayOnPurpose = true
                     scope.launch { runCatching { Media.share(context, blobId, fileName, "image/jpeg") }.onFailure { toast(context, "Couldn't share") } }
                 }
-                MiniAction(Icons.Rounded.ArrowDownward, "Download ${slot.label}") {
+                MiniAction(Icons.Rounded.ArrowDownward, "Download ${t.label}") {
                     scope.launch { runCatching { Media.saveToPhone(blobId, fileName, "image/jpeg") }.onSuccess { toast(context, it) }.onFailure { toast(context, it.message ?: "Couldn't save") } }
                 }
             }
@@ -244,7 +276,7 @@ private fun PhotoTile(
                     else Icon(Icons.Rounded.DocumentScanner, null, tint = look.tint, modifier = Modifier.size(18.dp))
                 }
                 Spacer(Modifier.weight(1f))
-                Text(slot.label, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(t.label, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(look.hint, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
@@ -253,7 +285,7 @@ private fun PhotoTile(
             modifier = Modifier.align(Alignment.TopEnd).padding(7.dp).size(28.dp)
                 .bounceClick(0.85f, onClick = onRemove)
                 .background(scheme.surface, CircleShape)
-        ) { Icon(Icons.Rounded.Close, "Remove ${slot.label}", tint = scheme.onSurface, modifier = Modifier.size(15.dp)) }
+        ) { Icon(Icons.Rounded.Close, "Remove ${t.label}", tint = scheme.onSurface, modifier = Modifier.size(15.dp)) }
     }
 }
 

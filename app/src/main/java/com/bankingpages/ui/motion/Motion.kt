@@ -3,7 +3,9 @@ package com.bankingpages.ui.motion
 import android.provider.Settings
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -21,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** One set of springs for the whole app, so every bounce feels related. */
 object Motion {
@@ -52,7 +56,10 @@ fun Modifier.pressBounce(source: MutableInteractionSource, pressedScale: Float =
     graphicsLayer { scaleX = scale; scaleY = scale }
 }
 
-/** Tap (and optional long-press) with the bounce and a light haptic tick instead of a ripple. */
+/**
+ * Tap (and optional long-press) with the bounce and a light haptic tick instead of a ripple.
+ * Every tap also plays a full dip-and-spring-back, so even the quickest touch visibly lands.
+ */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 fun Modifier.bounceClick(
     pressedScale: Float = 0.95f,
@@ -62,16 +69,27 @@ fun Modifier.bounceClick(
 ) = composed {
     val source = remember { MutableInteractionSource() }
     val haptic = LocalHapticFeedback.current
+    val reduce = LocalReduceMotion.current
+    val scope = rememberCoroutineScope()
+    val pop = remember { Animatable(1f) }
+    val tapped = {
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        if (!reduce) scope.launch {
+            // Small controls dip further than big cards, which only need a nudge.
+            pop.animateTo(pressedScale - 0.05f, tween(80, easing = FastOutSlowInEasing))
+            pop.animateTo(1f, spring(dampingRatio = 0.42f, stiffness = 420f))
+        }
+        onClick()
+    }
     this
+        .graphicsLayer { scaleX = pop.value; scaleY = pop.value }
         .pressBounce(source, pressedScale)
         .then(
             if (onLongClick != null) Modifier.combinedClickable(
                 interactionSource = source, indication = null, enabled = enabled,
                 onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onLongClick() },
-                onClick = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onClick() }
-            ) else Modifier.clickable(source, indication = null, enabled = enabled) {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onClick()
-            }
+                onClick = tapped
+            ) else Modifier.clickable(source, indication = null, enabled = enabled, onClick = tapped)
         )
 }
 

@@ -316,8 +316,9 @@ fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
             icon = Icons.Outlined.NoteAdd, accent = scheme.primary, title = "Name this document",
             confirmLabel = "Save",
             onConfirm = {
-                val name = title.trim().ifBlank { kind.label }
-                val doc = Doc(Vault.newId(), kind, name, file.blobId, file.mime, "$name.${if (file.mime == "application/pdf") "pdf" else "jpg"}", file.password)
+                val custom = title.trim()
+                val name = custom.ifBlank { kind.label }
+                val doc = Doc(Vault.newId(), if (custom.isBlank()) kind else DocKind.OTHER, name, file.blobId, file.mime, "$name.${if (file.mime == "application/pdf") "pdf" else "jpg"}", file.password)
                 Vault.saveDoc(doc)
                 ready = null; title = ""
                 onAdded(doc)
@@ -325,11 +326,11 @@ fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
             dismissLabel = "Discard", onDismiss = { Vault.deleteBlob(file.blobId); ready = null; title = "" }
         ) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DocKind.entries.forEach { k -> Chip(k.label, kind == k) { kind = k } }
+                // A chip is lit only while its name is the one in use; typing your own switches them all off.
+                DocKind.entries.filter { it != DocKind.OTHER }.forEach { k -> Chip(k.label, kind == k && title.isBlank()) { kind = k; title = "" } }
             }
             Spacer(Modifier.height(12.dp))
-            WarmField(title, { title = it }, "Name (optional)", keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                supporting = "e.g. ${kind.label} · Mum")
+            WarmField(title, { title = it }, "Custom name", keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
         }
     }
 

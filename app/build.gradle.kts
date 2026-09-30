@@ -14,8 +14,8 @@ android {
         applicationId = "com.bankingpages"
         minSdk = 29
         targetSdk = 34
-        versionCode = 13
-        versionName = "2.2"
+        versionCode = 19
+        versionName = "2.8"
     }
 
     // One key (in signing/, git-ignored) signs debug and release alike, so the SHA-1

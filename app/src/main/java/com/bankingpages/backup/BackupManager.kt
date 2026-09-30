@@ -34,17 +34,21 @@ import javax.crypto.AEADBadTagException
 import javax.crypto.spec.SecretKeySpec
 
 class NeedsSignInException : IOException("Google access expired. Sign in again to keep backing up.")
+class NeedsPinException : IOException("This older backup needs the PIN it was made with.")
 class WrongPasswordException : IOException("That PIN doesn't open this backup. Use the PIN from when it was made.")
 
 /**
- * Backs up the whole vault (details, photos, PDFs, custom logos) as one file in
- * Drive's hidden app folder, locked with a key made from the app PIN. Restoring on
- * a new phone asks for that PIN, and the restored PIN keeps working there.
+ * Backs up the whole vault (details, photos, PDFs, custom logos) as one encrypted file
+ * in Drive's hidden app folder, with its key beside it. Restoring on a new phone needs
+ * only the same Google sign-in.
  * Any change is backed up at once in the background.
  */
 object BackupManager {
     private const val BACKUP_NAME = "banking-pages-backup.bin"
+    private const val KEY_NAME = "banking-pages-key.bin"
+    /** BPB1 backups were locked with the app PIN; BPB2 ones with a key kept beside them in Drive. */
     private val MAGIC = "BPB1".toByteArray()
+    private val MAGIC2 = "BPB2".toByteArray()
 
     data class State(val email: String? = null, val lastBackupAt: Long = 0L, val busy: String? = null, val error: String? = null, val hasPassword: Boolean = false)
     data class RemoteInfo(val modified: Long)
@@ -65,10 +69,9 @@ object BackupManager {
     }
 
     val signedIn get() = _state.value.email != null
-    private val ready get() = signedIn && prefs.contains("key")
 
     private fun onDataChanged() {
-        if (!ready || restoring) return
+        if (!signedIn || restoring) return
         val work = OneTimeWorkRequestBuilder<BackupWorker>()
             // Straight away; a second change replaces the queued run, so bursts still make one upload.
             .setInitialDelay(1, TimeUnit.SECONDS)
@@ -111,8 +114,21 @@ object BackupManager {
 
     suspend fun remoteInfo(): RemoteInfo? = withDrive("Checking Drive…") { d -> d.find(BACKUP_NAME)?.let { RemoteInfo(it.modified) } }
 
+    /**
+     * The backup's own random key sits beside it in the hidden Drive folder, which only
+     * this app, signed in to this Google account, can read. So a restore needs the
+     * Google sign-in and nothing else.
+     */
+    private fun driveKey(drive: Drive, create: Boolean): SecretKeySpec? {
+        drive.find(KEY_NAME)?.let { return SecretKeySpec(drive.download(it.id), "AES") }
+        if (!create) return null
+        val bytes = Crypto.random(32)
+        drive.replace(KEY_NAME, "application/octet-stream", bytes)
+        return SecretKeySpec(bytes, "AES")
+    }
+
     suspend fun backupNow() = withDrive("Backing up…") { drive ->
-        val (salt, key) = storedKey() ?: throw IOException("Set your PIN first.")
+        val key = driveKey(drive, create = true)!!
         val zip = ByteArrayOutputStream()
         ZipOutputStream(zip).use { z ->
             fun put(name: String, bytes: ByteArray) { z.putNextEntry(ZipEntry(name)); z.write(bytes); z.closeEntry() }
@@ -121,20 +137,35 @@ object BackupManager {
             LogoStore.exportable().forEach { (k, b) -> put("logos/$k.png", b) }
             put("logos.json", LogoStore.exportState().toString().toByteArray())
         }
-        drive.replace(BACKUP_NAME, "application/octet-stream", MAGIC + salt + Crypto.seal(key, zip.toByteArray()))
+        drive.replace(BACKUP_NAME, "application/octet-stream", MAGIC2 + Crypto.seal(key, zip.toByteArray()))
         val now = System.currentTimeMillis()
         prefs.edit().putLong("last_backup", now).remove("error").apply()
         _state.update { it.copy(lastBackupAt = now, error = null) }
     }
 
-    /** Replaces everything on this phone with the backup. Returns how many accounts came back. */
-    suspend fun restore(password: String): Int = withDrive("Restoring…") { drive ->
+    /**
+     * Replaces everything on this phone with the backup, so nothing is ever doubled up.
+     * Returns how many accounts came back. [password] is only for an old PIN-locked backup.
+     */
+    suspend fun restore(password: String? = null): Int = withDrive("Restoring…") { drive ->
         val ref = drive.find(BACKUP_NAME) ?: throw IOException("No backup found in this Google account yet.")
         val blob = drive.download(ref.id)
-        if (blob.size < 4 + 16 + 12 || !blob.copyOfRange(0, 4).contentEquals(MAGIC)) throw IOException("That backup file is damaged.")
-        val salt = blob.copyOfRange(4, 20)
-        val key = Crypto.passwordKey(password, salt)
-        val zipBytes = try { Crypto.open(key, blob.copyOfRange(20, blob.size)) } catch (e: AEADBadTagException) { throw WrongPasswordException() }
+        if (blob.size < 4 + 12) throw IOException("That backup file is damaged.")
+        val head = blob.copyOfRange(0, 4)
+        val zipBytes = when {
+            head.contentEquals(MAGIC2) -> {
+                val key = driveKey(drive, create = false) ?: throw IOException("That backup's key is missing from Drive.")
+                try { Crypto.open(key, blob.copyOfRange(4, blob.size)) } catch (e: AEADBadTagException) { throw IOException("That backup file is damaged.") }
+            }
+            head.contentEquals(MAGIC) && blob.size >= 4 + 16 + 12 -> {
+                val salt = blob.copyOfRange(4, 20)
+                val key = if (password != null) Crypto.passwordKey(password, salt)
+                else storedKey()?.takeIf { it.first.contentEquals(salt) }?.second ?: throw NeedsPinException()
+                try { Crypto.open(key, blob.copyOfRange(20, blob.size)) }
+                catch (e: AEADBadTagException) { if (password == null) throw NeedsPinException() else throw WrongPasswordException() }
+            }
+            else -> throw IOException("That backup file is damaged.")
+        }
 
         var json: JSONObject? = null
         var logoState: JSONObject? = null
@@ -159,12 +190,11 @@ object BackupManager {
         } finally {
             restoring = false
         }
-        com.bankingpages.data.Pin.set(password) // the old PIN now unlocks this phone too
         Vault.accounts.value.size
     }
 
     suspend fun deleteBackup() = withDrive("Deleting backup…") { drive ->
-        drive.list(BACKUP_NAME).forEach { drive.delete(it.id) }
+        (drive.list(BACKUP_NAME) + drive.list(KEY_NAME)).forEach { drive.delete(it.id) }
         prefs.edit().remove("last_backup").apply()
         _state.update { it.copy(lastBackupAt = 0L) }
     }
@@ -184,6 +214,8 @@ object BackupManager {
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
+        } catch (e: NeedsPinException) {
+            throw e // the screen asks for the PIN; not a lasting error
         } catch (e: WrongPasswordException) {
             throw e // shown in the password dialog, not as a lasting error
         } catch (e: Throwable) {
@@ -198,8 +230,8 @@ object BackupManager {
 
     fun friendly(e: Throwable): String = when (e) {
         is kotlinx.coroutines.CancellationException -> ""
-        is NeedsSignInException, is WrongPasswordException -> e.message!!
-        is HttpException -> if (e.code == 403) "Drive said no (403). Check this account is a test user." else "Drive hiccup (${e.code}). Try again."
+        is NeedsSignInException, is WrongPasswordException, is NeedsPinException -> e.message!!
+        is HttpException -> if (e.code == 403) "Drive isn't ready for this account yet (403). Try again in a minute." else "Drive hiccup (${e.code}). Try again."
         is java.net.UnknownHostException, is java.net.SocketTimeoutException -> "No internet right now. We'll retry."
         else -> e.message ?: "Something went wrong."
     }

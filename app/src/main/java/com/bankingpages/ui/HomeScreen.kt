@@ -207,7 +207,7 @@ private fun DocCard(d: Doc, dragging: Boolean, onOpen: () -> Unit, modifier: Mod
             WarmCard(padding = 8.dp, onClick = onOpen) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(0.82f).clip(RoundedCornerShape(12.dp)).background(scheme.surfaceVariant)
+                    modifier = Modifier.fillMaxWidth().aspectRatio(1.02f).clip(RoundedCornerShape(12.dp)).background(scheme.surfaceVariant)
                 ) {
                     val img = preview
                     if (img != null) Image(img, null, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
@@ -272,13 +272,13 @@ private fun BankCard(a: Account, dragging: Boolean, onOpen: () -> Unit, modifier
                 Row(verticalAlignment = Alignment.Top) {
                     BankLogo(a.bankId, a.bankName, 56.dp)
                     Spacer(Modifier.weight(1f))
-                    if (a.photos.isNotEmpty()) Row(
+                    if (a.allBlobs.isNotEmpty()) Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.background(scheme.surfaceVariant, Pill).padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(Icons.Rounded.PhotoCamera, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("${a.photos.size}", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        Text("${a.allBlobs.size}", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                     }
                 }
                 Spacer(Modifier.height(18.dp))

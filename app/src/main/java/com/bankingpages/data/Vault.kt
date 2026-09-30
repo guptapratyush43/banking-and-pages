@@ -65,13 +65,13 @@ object Vault {
     fun saveAccount(a: Account) {
         val old = account(a.id)
         // Photos swapped out or removed during the edit are deleted from disk.
-        old?.photos?.values?.filter { it !in a.photos.values }?.forEach(::deleteBlob)
+        old?.allBlobs?.filter { it !in a.allBlobs }?.forEach(::deleteBlob)
         _accounts.value = if (old == null) _accounts.value + a else _accounts.value.map { if (it.id == a.id) a else it }
         persist()
     }
 
     fun deleteAccount(id: String) {
-        account(id)?.photos?.values?.forEach(::deleteBlob)
+        account(id)?.allBlobs?.forEach(::deleteBlob)
         _accounts.value = _accounts.value.filterNot { it.id == id }
         persist()
     }
@@ -112,7 +112,7 @@ object Vault {
     fun deleteBlob(id: String) { File(blobs, id).delete() }
 
     fun allBlobIds(): List<String> =
-        _accounts.value.flatMap { it.photos.values } + _docs.value.map { it.blobId }
+        _accounts.value.flatMap { it.allBlobs } + _docs.value.map { it.blobId }
 
     /** Swaps in a restored backup: the JSON first, then any blob no longer referenced is removed. */
     fun replaceAll(json: JSONObject, blobData: Map<String, ByteArray>) {
