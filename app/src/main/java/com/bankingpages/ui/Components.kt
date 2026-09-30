@@ -488,6 +488,7 @@ fun WarmDialog(
     dismissLabel: String,
     onDismiss: () -> Unit,
     confirmEnabled: Boolean = true,
+    busy: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -512,7 +513,11 @@ fun WarmDialog(
             Spacer(Modifier.height(22.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 SecondaryButton(dismissLabel, null, onDismiss, Modifier.weight(1f), tint = scheme.onSurface)
-                PrimaryButton(confirmLabel, null, onConfirm, Modifier.weight(1f), enabled = confirmEnabled, color = accent)
+                // While [busy], the confirm button holds a spinner and ignores taps.
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    PrimaryButton(if (busy) " " else confirmLabel, null, { if (!busy) onConfirm() }, Modifier.fillMaxWidth(), enabled = confirmEnabled, color = accent)
+                    if (busy) androidx.compose.material3.CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White, modifier = Modifier.size(20.dp))
+                }
             }
         }
     }

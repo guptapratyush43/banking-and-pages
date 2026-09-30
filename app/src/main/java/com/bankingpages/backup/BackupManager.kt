@@ -62,6 +62,9 @@ object BackupManager {
     val state: StateFlow<State> = _state.asStateFlow()
     private val lock = Mutex()
     @Volatile private var restoring = false
+    /** Set once "Erase all" starts: nothing may upload again before the app closes. */
+    @Volatile var erasing = false
+        private set
 
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -77,7 +80,7 @@ object BackupManager {
     fun requestBackup() = onDataChanged()
 
     private fun onDataChanged() {
-        if (!signedIn || restoring) return
+        if (!signedIn || restoring || erasing) return
         val work = OneTimeWorkRequestBuilder<BackupWorker>()
             // Straight away; a second change replaces the queued run, so bursts still make one upload.
             .setInitialDelay(1, TimeUnit.SECONDS)
@@ -147,6 +150,7 @@ object BackupManager {
     }
 
     suspend fun backupNow() = withDrive("Backing up…") { drive ->
+        if (erasing) return@withDrive
         val key = driveKey(drive, create = true)!!
         val zip = ByteArrayOutputStream()
         ZipOutputStream(zip).use { z ->
@@ -226,6 +230,22 @@ object BackupManager {
         _state.update { it.copy(lastBackupAt = 0L) }
     }
 
+    /**
+     * "Erase all": stops auto-backup, then deletes this app's backup, its key and the reset
+     * code from Drive. Throws if Drive can't be reached, so nothing is erased half-way.
+     */
+    suspend fun eraseDrive() {
+        erasing = true
+        WorkManager.getInstance(app).cancelUniqueWork("auto-backup")
+        if (!signedIn) return
+        try {
+            deleteBackup() // waits behind any upload already running, so nothing lands after it
+        } catch (e: Throwable) {
+            erasing = false
+            throw e
+        }
+    }
+
     private suspend fun <T> withDrive(label: String, block: (Drive) -> T): T = lock.withLock {
         _state.update { it.copy(busy = label) }
         try {
@@ -266,7 +286,7 @@ object BackupManager {
 
 class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        if (!BackupManager.signedIn) return Result.success()
+        if (!BackupManager.signedIn || BackupManager.erasing) return Result.success()
         return try {
             BackupManager.backupNow()
             Result.success()

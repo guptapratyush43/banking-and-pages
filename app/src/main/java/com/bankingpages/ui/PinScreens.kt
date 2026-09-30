@@ -1,17 +1,21 @@
 package com.bankingpages.ui
 
+import android.app.Activity
+import android.app.KeyguardManager
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.CloudDownload
@@ -27,7 +31,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -44,18 +47,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
-import androidx.compose.material.icons.outlined.AccountBalance
-import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -282,37 +280,74 @@ fun LockScreen(fingerprintOn: Boolean, onFingerprint: () -> Unit, onForgot: () -
     }
 
     if (confirmReset) {
+        // Erase all: the phone's own screen lock confirms it (so no child or stray tap can do it),
+        // then the Drive backup goes, then this phone, then the app closes.
+        val context = LocalContext.current
+        var erasing by remember { mutableStateOf(false) }
+        var failed by remember { mutableStateOf<String?>(null) }
+        var confirmed by remember { mutableStateOf(false) }
+        fun erase() {
+            if (erasing) return
+            erasing = true; failed = null
+            scope.launch {
+                try {
+                    BackupManager.eraseDrive()
+                    onForgot()
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    erasing = false
+                    failed = when (e) {
+                        is java.net.UnknownHostException, is java.net.SocketTimeoutException, is java.io.IOException ->
+                            "Couldn't reach Google Drive to delete your backup. Connect to the internet and try again."
+                        else -> "Couldn't delete your Google Drive backup. ${BackupManager.friendly(e)}"
+                    }
+                }
+            }
+        }
+        val phoneLock = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+            if (r.resultCode == Activity.RESULT_OK) { confirmed = true; erase() }
+            else toast(context, "Not confirmed. Nothing was erased")
+        }
+        fun confirmThenErase() {
+            if (erasing) return
+            val keyguard = context.getSystemService(KeyguardManager::class.java)
+            // A phone with no screen lock has nothing to ask for.
+            @Suppress("DEPRECATION")
+            val ask = if (confirmed || keyguard == null || !keyguard.isDeviceSecure) null
+                else keyguard.createConfirmDeviceCredentialIntent("Confirm it's you", "Enter your phone's screen lock to erase everything in Banking and Pages")
+            if (ask == null) erase()
+            else { Pin.awayOnPurpose = true; phoneLock.launch(ask) }
+        }
         WarmDialog(
             icon = Icons.Outlined.DeleteForever,
             accent = danger,
             title = "Start over?",
-            confirmLabel = "Erase all",
-            onConfirm = { confirmReset = false; onForgot() },
+            confirmLabel = if (failed != null) "Try again" else "Erase all",
+            onConfirm = ::confirmThenErase,
             dismissLabel = "Cancel",
-            onDismiss = { confirmReset = false }
+            onDismiss = { if (!erasing) confirmReset = false },
+            busy = erasing
         ) {
-            DialogText(
-                if (Recovery.isSet) "This erases everything on this phone so you can set a new PIN. If you back up to Google Drive, you can restore it all while setting up again."
-                else "No Aadhaar number was added, so this PIN can't be reset. Erase everything on this phone and set up again. If you back up to Google Drive, you can restore it all while setting up."
-            )
+            if (!Recovery.isSet) {
+                Note(Icons.Outlined.WarningAmber, "You didn't add an Aadhaar number for PIN reset, so your PIN can't be reset. The only way back in is to erase everything and start over.", LocalStatusColors.current.warning)
+                Spacer(Modifier.height(12.dp))
+            }
+            DialogText("This deletes everything on this phone and your Google Drive backup. It can't be undone.")
+            Spacer(Modifier.height(10.dp))
+            DialogText("You can come back to the app anytime later, sign in and start afresh.")
+            Spacer(Modifier.height(10.dp))
+            DialogText("To confirm it's you, you'll enter your phone's screen lock.")
+            failed?.let {
+                Spacer(Modifier.height(12.dp))
+                Note(Icons.Outlined.WarningAmber, it, danger)
+            }
         }
     }
 }
 
 // --- First launch ------------------------------------------------------------
 
-private class IntroPage(val icon: ImageVector, val title: String, val body: String)
-
-private val INTRO = listOf(
-    IntroPage(Icons.Outlined.AccountBalance, "Every bank, one tidy place",
-        "Account numbers, IFSC codes, net banking logins and security answers for each bank you use, kept neatly under its logo."),
-    IntroPage(Icons.Outlined.CreditCard, "Cheques, cards and passbooks",
-        "Snap your cancelled cheque, passbook and cards, and keep your Aadhaar and PAN PDFs too. Open, share or save any of them in a tap."),
-    IntroPage(Icons.Outlined.Shield, "Locked and private",
-        "Everything is encrypted on this phone and opens only with your PIN. Back it up to your own Google Drive whenever you like.")
-)
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(onDone: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
@@ -333,51 +368,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
         label = "onboarding"
     ) { s ->
         when (s) {
-            0 -> {
-                val pager = rememberPagerState { INTRO.size }
-                Column(Modifier.fillMaxSize().background(scheme.background)) {
-                    HorizontalPager(pager, modifier = Modifier.weight(1f)) { page ->
-                        val p = INTRO[page]
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp)
-                        ) {
-                            // Each page's bubble springs up as it comes into view.
-                            val shown = pager.currentPage == page
-                            val scale by animateFloatAsState(if (shown) 1f else 0.7f, Motion.bouncy(), label = "introIcon")
-                            Box(Modifier.graphicsLayer { scaleX = scale; scaleY = scale }) {
-                                IconBubble(p.icon, size = 116.dp, iconSize = 52.dp)
-                            }
-                            Spacer(Modifier.height(34.dp))
-                            Text(p.title, style = MaterialTheme.typography.displaySmall, color = scheme.onBackground, textAlign = TextAlign.Center)
-                            Spacer(Modifier.height(14.dp))
-                            Text(p.body, style = MaterialTheme.typography.bodyLarge, color = scheme.onSurfaceVariant, textAlign = TextAlign.Center)
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                        repeat(INTRO.size) { i ->
-                            val active = pager.currentPage == i
-                            val w by animateFloatAsState(if (active) 22f else 8f, Motion.bouncy(), label = "introDot")
-                            Box(
-                                Modifier.height(8.dp).width(w.dp)
-                                    .background(if (active) scheme.primary else scheme.outline, RoundedCornerShape(50))
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(28.dp))
-                    val last = pager.currentPage == INTRO.lastIndex
-                    PrimaryButton(
-                        if (last) "Set up my PIN" else "Next", null,
-                        onClick = { if (last) step = 1 else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) } },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-                    )
-                    Box(Modifier.fillMaxWidth().height(60.dp), contentAlignment = Alignment.Center) {
-                        if (!last) Text("Skip", style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant,
-                            modifier = Modifier.bounceClick(0.92f) { step = 1 }.padding(horizontal = 16.dp, vertical = 8.dp))
-                    }
-                }
-            }
+            0 -> WelcomePager(onFinish = { step = 1 })
             1 -> PinPanel(
                 icon = Icons.Outlined.Lock,
                 title = "Create your PIN",
@@ -492,7 +483,7 @@ fun AadhaarSetup(title: String, primary: String, secondary: String, onSaved: () 
         SecondaryButton(secondary, null, onSecondary, Modifier.fillMaxWidth(), tint = scheme.onSurface)
         if (skipWarning) {
             Spacer(Modifier.height(16.dp))
-            Note(Icons.Outlined.WarningAmber, "Without it, a forgotten PIN can't be reset. You would have to erase the app and set it up again, restoring from your Google Drive backup if you have one, or start afresh.", LocalStatusColors.current.warning)
+            Note(Icons.Outlined.WarningAmber, "Without it, a forgotten PIN can't be reset. You would have to erase everything, your Google Drive backup too, and start afresh.", LocalStatusColors.current.warning)
         }
     }
 }
