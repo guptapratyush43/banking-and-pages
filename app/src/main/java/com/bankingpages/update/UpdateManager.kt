@@ -30,7 +30,7 @@ import java.security.MessageDigest
  * never offered again. Only a release newer than that one brings the pop-up back.
  */
 object UpdateManager {
-    private const val LATEST = "https://api.github.com/repos/guptapratyush43/bankingandpages/releases/latest"
+    private const val LATEST = "https://api.github.com/repos/guptapratyush43/bankingpages/releases/latest"
     private const val DAY = 20L * 60 * 60 * 1000 // "about once a day", forgiving of odd opening times
 
     data class Release(val version: String, val notes: String, val apkUrl: String, val apkSize: Long, val sha256: String?)

@@ -342,10 +342,10 @@ object Media {
         context.startActivity(Intent.createChooser(send, title))
     }
 
-    /** Photos land in Pictures/Banking and Pages (the gallery); PDFs in Download/Banking and Pages. */
+    /** Photos land in Pictures/Banking Pages (the gallery); PDFs in Download/Banking Pages. */
     suspend fun saveToPhone(blobId: String, fileName: String, mime: String): String = withContext(Dispatchers.IO) {
         val image = mime.startsWith("image/")
-        val folder = (if (image) Environment.DIRECTORY_PICTURES else Environment.DIRECTORY_DOWNLOADS) + "/Banking and Pages"
+        val folder = (if (image) Environment.DIRECTORY_PICTURES else Environment.DIRECTORY_DOWNLOADS) + "/Banking Pages"
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, safeName(fileName))
             put(MediaStore.MediaColumns.MIME_TYPE, mime)
@@ -362,6 +362,6 @@ object Media {
             cr.delete(uri, null, null)
             throw e
         }
-        if (image) "Saved to gallery · Banking and Pages" else "Saved to Downloads · Banking and Pages"
+        if (image) "Saved to gallery · Banking Pages" else "Saved to Downloads · Banking Pages"
     }
 }

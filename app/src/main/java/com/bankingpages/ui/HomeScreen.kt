@@ -122,7 +122,7 @@ fun HomeScreen(
                 style = MaterialTheme.typography.labelSmall, color = scheme.primary
             )
             Spacer(Modifier.height(4.dp))
-            Text("Banking and Pages", style = MaterialTheme.typography.displaySmall, color = scheme.onBackground)
+            Text("Banking Pages", style = MaterialTheme.typography.displaySmall, color = scheme.onBackground)
         }
 
         Spacer(Modifier.height(18.dp))

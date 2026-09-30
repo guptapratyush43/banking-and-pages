@@ -234,7 +234,7 @@ fun DocViewer(doc: Doc, onBack: () -> Unit, onDelete: () -> Unit) {
             icon = Icons.Outlined.DeleteOutline, accent = LocalStatusColors.current.danger, title = "Delete ${doc.title}?",
             confirmLabel = "Delete", onConfirm = { confirmDelete = false; onDelete() },
             dismissLabel = "Keep", onDismiss = { confirmDelete = false }
-        ) { DialogText("The file is removed from Banking and Pages. Copies you saved to the phone stay.") }
+        ) { DialogText("The file is removed from Banking Pages. Copies you saved to the phone stay.") }
 
         zoomPage?.let { p ->
             androidx.activity.compose.BackHandler { zoomPage = null }

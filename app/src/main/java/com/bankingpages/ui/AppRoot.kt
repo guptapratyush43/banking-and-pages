@@ -141,7 +141,7 @@ fun AppRoot(nav: NavViewModel) {
             ) {
                 LockScreen(
                     fingerprintOn = settings.fingerprint && fingerprintStatus(context) == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS,
-                    onFingerprint = { (context as? FragmentActivity)?.let { askFingerprint(it, "Unlock Banking and Pages") { Pin.unlockWithFingerprint() } } },
+                    onFingerprint = { (context as? FragmentActivity)?.let { askFingerprint(it, "Unlock Banking Pages") { Pin.unlockWithFingerprint() } } },
                     onForgot = { eraseEverything(context) }
                 )
             }

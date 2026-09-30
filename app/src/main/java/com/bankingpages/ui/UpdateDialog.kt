@@ -60,7 +60,7 @@ fun UpdateDialog(release: UpdateManager.Release) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 IconBubble(Icons.Rounded.SystemUpdate, size = 64.dp, iconSize = 30.dp)
                 Spacer(Modifier.height(14.dp))
-                Text("Banking and Pages v${release.version} is here", style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, textAlign = TextAlign.Center)
+                Text("Banking Pages v${release.version} is here", style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(4.dp))
                 Text("You have v${UpdateManager.currentVersion}", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }

@@ -315,7 +315,7 @@ fun LockScreen(fingerprintOn: Boolean, onFingerprint: () -> Unit, onForgot: () -
             // A phone with no screen lock has nothing to ask for.
             @Suppress("DEPRECATION")
             val ask = if (confirmed || keyguard == null || !keyguard.isDeviceSecure) null
-                else keyguard.createConfirmDeviceCredentialIntent("Confirm it's you", "Enter your phone's screen lock to erase everything in Banking and Pages")
+                else keyguard.createConfirmDeviceCredentialIntent("Confirm it's you", "Enter your phone's screen lock to erase everything in Banking Pages")
             if (ask == null) erase()
             else { Pin.awayOnPurpose = true; phoneLock.launch(ask) }
         }
@@ -372,7 +372,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             1 -> PinPanel(
                 icon = Icons.Outlined.Lock,
                 title = "Create your PIN",
-                subtitle = "You'll use these 4 digits every time you open Banking and Pages",
+                subtitle = "You'll use these 4 digits every time you open Banking Pages",
                 onComplete = { pin -> first = pin; step = 2; true },
                 footer = { Text("Don't use your ATM or UPI PIN", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
             )

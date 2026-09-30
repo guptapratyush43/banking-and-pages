@@ -99,7 +99,7 @@ fun askFingerprint(activity: FragmentActivity, title: String, onOk: () -> Unit) 
     prompt.authenticate(
         BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
-            .setSubtitle("Banking and Pages")
+            .setSubtitle("Banking Pages")
             .setNegativeButtonText("Use PIN")
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
             .build()
@@ -150,7 +150,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                                 else when (fingerprintStatus(context)) {
                                     BiometricManager.BIOMETRIC_SUCCESS -> fingerprintWarning = true
                                     BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> toast(context, "Add a fingerprint in your phone's settings first")
-                                    else -> toast(context, "This phone has no fingerprint sensor Banking and Pages can use")
+                                    else -> toast(context, "This phone has no fingerprint sensor Banking Pages can use")
                                 }
                             })
                         }
@@ -188,7 +188,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().entrance(3, "about", seen).padding(horizontal = 4.dp)) {
                     Icon(Icons.Outlined.Info, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Banking and Pages $version · everything is encrypted on this phone", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    Text("Banking Pages $version · everything is encrypted on this phone", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                 }
             }
         }
@@ -223,7 +223,7 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
             },
             dismissLabel = "PIN only", onDismiss = { fingerprintWarning = false }
         ) {
-            DialogText("Fingerprint unlock is handy, but it's less private than your PIN. While you're asleep or not looking, someone could press your finger to the phone and open Banking and Pages. A PIN in your head can't be borrowed that way.")
+            DialogText("Fingerprint unlock is handy, but it's less private than your PIN. While you're asleep or not looking, someone could press your finger to the phone and open Banking Pages. A PIN in your head can't be borrowed that way.")
         }
     }
 }

@@ -1,4 +1,4 @@
-# Banking and Pages
+# Banking Pages
 
 A cute, private Android app that keeps every bank page you ever need in one place, each under its own bank logo.
 
