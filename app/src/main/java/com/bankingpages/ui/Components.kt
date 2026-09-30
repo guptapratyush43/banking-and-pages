@@ -366,7 +366,8 @@ fun WarmField(
     val shape = RoundedCornerShape(14.dp)
     Column(modifier.fillMaxWidth().graphicsLayer { translationX = shake.value * density }) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            // A multi-line field (notes) keeps its icon level with the first line.
+            verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
@@ -377,7 +378,7 @@ fun WarmField(
         ) {
             if (leading != null) {
                 val tint by animateColorAsState(if (focused) scheme.primary else scheme.onSurfaceVariant, label = "fieldIcon")
-                Icon(leading, null, tint = tint, modifier = Modifier.size(21.dp))
+                Icon(leading, null, tint = tint, modifier = Modifier.padding(top = if (singleLine) 0.dp else 5.dp).size(21.dp))
                 Spacer(Modifier.width(13.dp))
             }
             Column(Modifier.weight(1f)) {

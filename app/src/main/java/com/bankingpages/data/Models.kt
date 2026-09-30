@@ -119,7 +119,7 @@ data class Account(
 }
 
 enum class DocKind(val label: String) {
-    AADHAAR("Aadhaar card"), PAN("PAN card"), VOTER("Voter ID"), PASSPORT("Passport"), DL("Driving licence"), OTHER("Document")
+    AADHAAR("Aadhaar Card"), PAN("PAN Card"), VOTER("Voter ID"), PASSPORT("Passport"), DL("Driving Licence"), OTHER("Document")
 }
 
 data class Doc(

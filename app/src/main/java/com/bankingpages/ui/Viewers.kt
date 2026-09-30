@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.NoteAdd
@@ -71,6 +73,7 @@ import com.bankingpages.data.Vault
 import com.bankingpages.files.Media
 import com.bankingpages.ui.motion.Motion
 import com.bankingpages.ui.motion.entrance
+import com.bankingpages.ui.motion.popIn
 import com.bankingpages.ui.theme.LocalStatusColors
 import kotlinx.coroutines.launch
 
@@ -190,7 +193,7 @@ fun DocViewer(doc: Doc, onBack: () -> Unit, onDelete: () -> Unit) {
                     item(key = "pw") {
                         WarmCard(padding = 14.dp, modifier = Modifier.entrance(0, "pw", seen)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconBubble(Icons.Outlined.Lock, size = 38.dp, iconSize = 18.dp)
+                                IconBubble(Icons.Outlined.Lock, size = 40.dp, iconSize = 20.dp)
                                 Spacer(Modifier.size(12.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text("Password protected", style = MaterialTheme.typography.titleSmall, color = scheme.onSurface)
@@ -326,7 +329,7 @@ fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxSize().background(scheme.background).padding(28.dp)
             ) {
-                IconBubble(Icons.Outlined.NoteAdd, size = 96.dp, iconSize = 44.dp)
+                IconBubble(Icons.Outlined.Description, size = 96.dp, iconSize = 44.dp, modifier = Modifier.popIn(0))
                 Spacer(Modifier.height(26.dp))
                 Text("Front saved", style = MaterialTheme.typography.labelLarge, color = scheme.primary)
                 Spacer(Modifier.height(6.dp))
@@ -334,7 +337,7 @@ fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
                 Spacer(Modifier.height(10.dp))
                 Text("Both sides are placed side by side on one A4 page, like a photocopy.", style = MaterialTheme.typography.bodyLarge, color = scheme.onSurfaceVariant, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(34.dp))
-                PrimaryButton("Scan the back", Icons.Outlined.NoteAdd, { scanner.scan(1, false) }, Modifier.fillMaxWidth())
+                PrimaryButton("Scan the back", Icons.Outlined.DocumentScanner, { scanner.scan(1, false) }, Modifier.fillMaxWidth())
                 Spacer(Modifier.height(12.dp))
                 SecondaryButton("It has one side only", null, { front = null; take { takeSides(listOf(Uri.parse(f))) } }, Modifier.fillMaxWidth(), tint = scheme.onSurface)
             }

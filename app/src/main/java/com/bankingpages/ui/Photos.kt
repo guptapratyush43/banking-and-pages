@@ -249,9 +249,9 @@ fun PhotoGrid(
                             Text("Debit or credit", style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1)
                         }
                         WarmMenu(addMenu, { addMenu = false }) {
-                            MenuItem("Debit card", Icons.Rounded.CreditCard) { addMenu = false; newKind = "n:d"; menuKey = "n:d" }
+                            MenuItem("Debit Card", Icons.Rounded.CreditCard) { addMenu = false; newKind = "n:d"; menuKey = "n:d" }
                             HairLine(Modifier.padding(horizontal = 12.dp))
-                            MenuItem("Credit card", Icons.Rounded.Payments) { addMenu = false; newKind = "n:c"; menuKey = "n:c" }
+                            MenuItem("Credit Card", Icons.Rounded.Payments) { addMenu = false; newKind = "n:c"; menuKey = "n:c" }
                         }
                         SourceMenu(menuKey?.startsWith("n:") == true, { menuKey = null }, onScan = { start(newKind) }, onGallery = { gallery(newKind) })
                     }

@@ -129,7 +129,6 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                     BackupSection()
                 }
 
-
                 Spacer(Modifier.height(24.dp))
                 Column(Modifier.entrance(1, "sec", seen)) {
                     SectionLabel("Security")
@@ -155,7 +154,6 @@ fun SettingsScreen(onOverlay: (Boolean) -> Unit) {
                         }
                     }
                 }
-
 
                 Spacer(Modifier.height(24.dp))
                 Column(Modifier.entrance(2, "update", seen)) {
@@ -333,7 +331,7 @@ fun BackupSection() {
     WarmCard {
         if (state.email == null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBubble(Icons.Outlined.CloudUpload, size = 44.dp, iconSize = 22.dp)
+                IconBubble(Icons.Outlined.CloudUpload, size = 40.dp, iconSize = 20.dp)
                 Spacer(Modifier.width(14.dp))
                 Text("Google Drive backup", style = MaterialTheme.typography.titleMedium, color = scheme.onSurface)
             }
@@ -346,7 +344,7 @@ fun BackupSection() {
             PrimaryButton("Sign in with Google", null, onClick = { signIn() }, modifier = Modifier.fillMaxWidth())
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBubble(Icons.Outlined.CloudDone, size = 44.dp, iconSize = 22.dp)
+                IconBubble(Icons.Outlined.CloudDone, size = 40.dp, iconSize = 20.dp)
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text(state.email!!, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)

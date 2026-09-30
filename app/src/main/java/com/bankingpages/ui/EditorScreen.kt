@@ -358,7 +358,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
 
 /**
  * The floating glass bar above Save: one icon per chapter, in order. The chapter in
- * view is lit; tap any to glide to it.
+ * view is lit in that chapter's own colour; tap any to glide to it.
  */
 @Composable
 fun ChapterBar(backdrop: LayerBackdrop, current: Int, modifier: Modifier = Modifier, onJump: (Int) -> Unit) {
@@ -381,7 +381,7 @@ fun ChapterBar(backdrop: LayerBackdrop, current: Int, modifier: Modifier = Modif
             val glow by animateFloatAsState(if (on) 1f else 0f, Motion.bouncy(), label = "barOn")
             val tint by animateColorAsState(if (on) Color.White else scheme.onSurface, label = "barTint")
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).bounceClick(0.85f) { onJump(i) }) {
-                Box(Modifier.size(40.dp).graphicsLayer { alpha = glow.coerceIn(0f, 1f); val s = 0.6f + 0.4f * glow; scaleX = s; scaleY = s }.background(AccentBrush, CircleShape).gloss(CircleShape))
+                Box(Modifier.size(40.dp).graphicsLayer { alpha = glow.coerceIn(0f, 1f); val s = 0.6f + 0.4f * glow; scaleX = s; scaleY = s }.background(c.tint, CircleShape).gloss(CircleShape))
                 Icon(c.icon, c.title, tint = tint, modifier = Modifier.size(20.dp))
             }
         }
@@ -435,7 +435,7 @@ fun ChapterCard(
 @Composable
 private fun BranchPanel(branch: String, address: String) {
     val scheme = MaterialTheme.colorScheme
-    Row(Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
+    Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)) {
         Icon(Icons.Outlined.LocationOn, null, tint = scheme.primary, modifier = Modifier.padding(top = 2.dp).size(21.dp))
         Spacer(Modifier.width(13.dp))
         Column(Modifier.weight(1f)) {

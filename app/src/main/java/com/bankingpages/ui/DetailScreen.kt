@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Key
@@ -186,8 +187,7 @@ fun DetailScreen(a: Account, scroll: ScrollState, seen: MutableSet<Any>, onBack:
                 }
 
                 ChapterCard(6, tops, seen, pulse) {
-                    if (a.notes.isBlank()) Empty()
-                    else Text(a.notes, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface, modifier = Modifier.padding(horizontal = 4.dp))
+                    Rows { Field(Icons.Outlined.EditNote, "Notes", a.notes) }
                 }
             }
 
@@ -266,7 +266,7 @@ private fun RowsScope.Field(icon: ImageVector, label: String, value: String, sec
                 copy(context, label, value, sensitive = secret)
                 if (Build.VERSION.SDK_INT >= 33) toast(context, "$label copied")
             }) { if (secret) revealed = !revealed }
-            .background(scheme.surfaceVariant.copy(alpha = 0.6f), Pill)
+            .background(scheme.surfaceVariant, Pill)
             .padding(horizontal = 14.dp, vertical = 7.dp)
     ) {
         Icon(icon, null, tint = scheme.primary, modifier = Modifier.size(21.dp))
