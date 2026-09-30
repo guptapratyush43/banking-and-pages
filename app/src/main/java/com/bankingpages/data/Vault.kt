@@ -109,7 +109,10 @@ object Vault {
 
     fun hasBlob(id: String) = File(blobs, id).exists()
 
-    fun deleteBlob(id: String) { File(blobs, id).delete() }
+    fun deleteBlob(id: String) {
+        File(blobs, id).delete()
+        File(dir, "renders").listFiles()?.filter { it.name.startsWith(id) }?.forEach { it.delete() }
+    }
 
     fun allBlobIds(): List<String> =
         _accounts.value.flatMap { it.allBlobs } + _docs.value.map { it.blobId }
@@ -120,6 +123,7 @@ object Vault {
         fromJson(json)
         val keep = allBlobIds().toSet()
         blobs.listFiles()?.filter { it.name !in keep }?.forEach { it.delete() }
+        File(dir, "renders").deleteRecursively()
         persist(notify = false)
     }
 }

@@ -114,14 +114,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private val TYPES = listOf("Savings", "Current", "Salary")
+private val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
 
 /** The form's chapters, top to bottom. The side rail shows one icon for each. */
-private class Chapter(val title: String, val icon: ImageVector, val tint: Color)
+class Chapter(val title: String, val icon: ImageVector, val tint: Color)
 
-private val CHAPTERS = listOf(
+val CHAPTERS = listOf(
     Chapter("Customer ID", Icons.Outlined.Badge, Color(0xFF8A55E0)),
-    Chapter("Account details", Icons.Outlined.AccountBalance, Color(0xFFD9542B)),
     Chapter("Registered contact", Icons.Outlined.ContactPhone, Color(0xFF1E9E8A)),
+    Chapter("Account details", Icons.Outlined.AccountBalance, Color(0xFFD9542B)),
     Chapter("Net banking", Icons.Outlined.Language, Color(0xFF3B7BE0)),
     Chapter("Security questions", Icons.Outlined.Shield, Color(0xFFC2459B)),
     Chapter("Documents", Icons.Outlined.Description, Color(0xFF5B6BD6)),
@@ -161,6 +162,12 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
     val imeOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     val backdrop = rememberLayerBackdrop()
 
+    var mobileBad by remember { mutableStateOf(false) }
+    var mobileShake by remember { mutableStateOf(0) }
+    val emailBad = a.email.isNotBlank() && !EMAIL.matches(a.email)
+    var emailChecked by remember { mutableStateOf(false) }
+    var emailShake by remember { mutableStateOf(0) }
+
     val changed = a != initial || questions.toList() != initial.questions
     fun discard() { added.forEach(Vault::deleteBlob); onBack() }
     BackHandler(enabled = !picking) { if (changed) confirmLeave = true else discard() }
@@ -183,9 +190,9 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = if (imeOpen) 24.dp else 146.dp)
                 ) {
                     // The bank itself, with a pencil to pick another.
-                    WarmCard(modifier = Modifier.entrance(0, "bank", seen)) {
+                    WarmCard(padding = 14.dp, modifier = Modifier.entrance(0, "bank", seen)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            BankLogo(a.bankId, a.bankName, 56.dp)
+                            BankLogo(a.bankId, a.bankName, 48.dp)
                             Spacer(Modifier.width(14.dp))
                             Text(a.bankName, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, modifier = Modifier.weight(1f))
                             Spacer(Modifier.width(8.dp))
@@ -193,11 +200,31 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         }
                     }
 
-                    Section(0, tops, seen, pulse) {
+                    ChapterCard(0, tops, seen, pulse) {
                         WarmField(a.customerId, { a = a.copy(customerId = it) }, "Customer ID / CIF", leading = Icons.Outlined.Badge, keyboard = next())
                     }
 
-                    Section(1, tops, seen, pulse) {
+                    ChapterCard(1, tops, seen, pulse) {
+                        WarmField(
+                            a.mobile, { v ->
+                                val clean = v.filter { c -> c.isDigit() || c == '+' || c == ' ' }
+                                // An eleventh digit is refused, with a shake.
+                                if (clean.count(Char::isDigit) > 10) { mobileBad = true; mobileShake++ } else { mobileBad = false; a = a.copy(mobile = clean) }
+                            }, "Registered mobile", leading = Icons.Outlined.Phone,
+                            keyboard = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                            isError = mobileBad, supporting = if (mobileBad) "Invalid phone number: a mobile number has 10 digits" else null,
+                            shakeKey = mobileShake, onBlur = { mobileBad = false }
+                        )
+                        Gap()
+                        WarmField(
+                            a.email, { a = a.copy(email = it.trim()) }, "Registered email", leading = Icons.Outlined.Email,
+                            keyboard = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                            isError = emailBad && emailChecked, supporting = if (emailBad && emailChecked) "Invalid email: it needs an @, like name@mail.com" else null,
+                            shakeKey = emailShake, onBlur = { emailChecked = true; if (emailBad) emailShake++ }
+                        )
+                    }
+
+                    ChapterCard(2, tops, seen, pulse) {
                         WarmField(a.holder, { a = a.copy(holder = it) }, "Account holder name", leading = Icons.Outlined.Person, keyboard = words())
                         Gap()
                         WarmField(a.number, { a = a.copy(number = it.filter(Char::isLetterOrDigit)) }, "Account number", leading = Icons.Outlined.Numbers,
@@ -221,15 +248,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         }
                     }
 
-                    Section(2, tops, seen, pulse) {
-                        WarmField(a.mobile, { a = a.copy(mobile = it.filter { c -> c.isDigit() || c == '+' || c == ' ' }) }, "Registered mobile", leading = Icons.Outlined.Phone,
-                            keyboard = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next))
-                        Gap()
-                        WarmField(a.email, { a = a.copy(email = it.trim()) }, "Registered email", leading = Icons.Outlined.Email,
-                            keyboard = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next))
-                    }
-
-                    Section(3, tops, seen, pulse) {
+                    ChapterCard(3, tops, seen, pulse) {
                         WarmField(a.netUserId, { a = a.copy(netUserId = it) }, "User ID", leading = Icons.Outlined.AccountCircle, keyboard = next())
                         Gap()
                         SecretField(a.loginPassword, { a = a.copy(loginPassword = it) }, "Login password")
@@ -239,7 +258,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         SecretField(a.profilePassword, { a = a.copy(profilePassword = it) }, "Profile password (if any)")
                     }
 
-                    Section(4, tops, seen, pulse) {
+                    ChapterCard(4, tops, seen, pulse) {
                         Column(Modifier.animateContentSize(Motion.smooth())) {
                             questions.forEachIndexed { i, qa ->
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -260,7 +279,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         }
                     }
 
-                    Section(5, tops, seen, pulse) {
+                    ChapterCard(5, tops, seen, pulse) {
                         PhotoGrid(
                             account = a,
                             onOpen = { _, _ -> },
@@ -278,7 +297,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         )
                     }
 
-                    Section(6, tops, seen, pulse) {
+                    ChapterCard(6, tops, seen, pulse) {
                         WarmField(a.notes, { a = a.copy(notes = it) }, "Anything else to remember", leading = Icons.Outlined.EditNote, singleLine = false, minLines = 3,
                             keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
                     }
@@ -299,6 +318,12 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
                         tops[i]?.let { y -> scope.launch { scroll.animateScrollTo((y - 24).coerceAtLeast(0), Motion.smooth()) } }
                     }
                     PrimaryButton(if (isNew) "Save bank" else "Save changes", Icons.Outlined.Check, onClick = {
+                        if (emailBad) {
+                            // Not saved with a broken email: go to it and shake it.
+                            emailChecked = true; emailShake++
+                            tops[1]?.let { y -> scope.launch { scroll.animateScrollTo((y - 24).coerceAtLeast(0), Motion.smooth()) } }
+                            return@PrimaryButton
+                        }
                         val final = a.copy(questions = questions.filter { it.question.isNotBlank() || it.answer.isNotBlank() }, updatedAt = System.currentTimeMillis())
                         // Blobs dropped again before saving are cleared here too.
                         added.filter { it !in final.allBlobs }.forEach(Vault::deleteBlob)
@@ -336,7 +361,7 @@ fun EditorScreen(initial: Account, isNew: Boolean, onBack: () -> Unit, onSave: (
  * view is lit; tap any to glide to it.
  */
 @Composable
-private fun ChapterBar(backdrop: LayerBackdrop, current: Int, modifier: Modifier = Modifier, onJump: (Int) -> Unit) {
+fun ChapterBar(backdrop: LayerBackdrop, current: Int, modifier: Modifier = Modifier, onJump: (Int) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     // Thin enough that the form shows through and the glass reads as glass.
     val surface = scheme.surface.copy(alpha = if (Build.VERSION.SDK_INT >= 31) 0.38f else 0.96f)
@@ -365,7 +390,7 @@ private fun ChapterBar(backdrop: LayerBackdrop, current: Int, modifier: Modifier
 
 /** One chapter of the form: its own card, headed by a coloured icon, with an optional button top right. */
 @Composable
-private fun Section(
+fun ChapterCard(
     index: Int, tops: MutableMap<Int, Int>, seen: MutableSet<Any>, pulse: Pair<Int, Int>,
     action: (@Composable () -> Unit)? = null, content: @Composable () -> Unit
 ) {
@@ -378,8 +403,9 @@ private fun Section(
             breath.animateTo(1f, tween(360)); breath.animateTo(0f, tween(520))
         }
     }
-    Spacer(Modifier.height(18.dp))
+    Spacer(Modifier.height(12.dp))
     WarmCard(
+        padding = 14.dp,
         modifier = Modifier
             .onGloballyPositioned { tops[index] = it.positionInParent().y.toInt() }
             .entrance(index + 1, chapter.title, seen)
@@ -395,12 +421,12 @@ private fun Section(
             }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBubble(chapter.icon, size = 38.dp, iconSize = 20.dp, background = chapter.tint, tint = Color.White)
+            IconBubble(chapter.icon, size = 32.dp, iconSize = 17.dp, background = chapter.tint, tint = Color.White)
             Spacer(Modifier.width(12.dp))
             Text(chapter.title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             action?.invoke()
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
         content()
     }
 }
@@ -428,7 +454,7 @@ private fun BranchPanel(branch: String, address: String) {
     }
 }
 
-@Composable private fun Gap() = Spacer(Modifier.height(10.dp))
+@Composable private fun Gap() = Spacer(Modifier.height(8.dp))
 private fun words() = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next)
 private fun next() = KeyboardOptions(imeAction = ImeAction.Next)
 

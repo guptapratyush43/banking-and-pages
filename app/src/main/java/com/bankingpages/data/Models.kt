@@ -131,6 +131,8 @@ data class Doc(
     val fileName: String,
     /** e-Aadhaar and some PAN PDFs are locked; kept so the app can open them. */
     val password: String? = null,
+    /** The user's own labels, such as whose document it is. */
+    val tags: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis()
 ) {
     val isPdf get() = mime == "application/pdf"
@@ -138,6 +140,7 @@ data class Doc(
     fun toJson(): JSONObject = JSONObject()
         .put("id", id).put("kind", kind.name).put("title", title).put("blobId", blobId).put("mime", mime)
         .put("fileName", fileName).put("password", password ?: JSONObject.NULL).put("createdAt", createdAt)
+        .put("tags", JSONArray().apply { tags.forEach { put(it) } })
 
     companion object {
         fun fromJson(o: JSONObject) = Doc(
@@ -146,6 +149,7 @@ data class Doc(
             title = o.optString("title"), blobId = o.getString("blobId"), mime = o.optString("mime", "application/pdf"),
             fileName = o.optString("fileName", "document.pdf"),
             password = o.optString("password").takeIf { it.isNotBlank() && it != "null" },
+            tags = (o.optJSONArray("tags") ?: JSONArray()).let { t -> List(t.length()) { i -> t.getString(i) } },
             createdAt = o.optLong("createdAt")
         )
     }

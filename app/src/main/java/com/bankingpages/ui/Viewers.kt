@@ -55,10 +55,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.bankingpages.AppScope
 import com.bankingpages.data.Doc
 import com.bankingpages.data.DocKind
 import com.bankingpages.data.Pin
@@ -168,7 +173,7 @@ fun DocViewer(doc: Doc, onBack: () -> Unit, onDelete: () -> Unit) {
     var zoomPage by rememberSaveable { mutableStateOf<Int?>(null) }
     val seen = remember { mutableSetOf<Any>() }
     var confirmDelete by remember { mutableStateOf(false) }
-    val widthPx = with(LocalDensity.current) { 360.dp.roundToPx() * 2 }
+    val widthPx = remember { Media.viewerWidth }
 
     Box(Modifier.fillMaxSize().background(scheme.background)) {
         Column(Modifier.fillMaxSize()) {
@@ -247,21 +252,30 @@ class DocAdder(val scan: () -> Unit, val import: () -> Unit)
 private class NewFile(val blobId: String, val mime: String, val password: String?)
 
 /**
- * Adding a document. The scanner or the picker comes first; a locked PDF (as every
- * e-Aadhaar is) then asks for its password, and last of all the document gets its name.
+ * Adding a document. Scanning takes the front, comes back to a full screen that asks
+ * for the back, and lays both sides on one A4 page like a photocopy. A locked PDF (as
+ * every e-Aadhaar is) asks for its password. Last of all the document gets its name and tags.
  */
 @Composable
 fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val focus = LocalFocusManager.current
     var ready by remember { mutableStateOf<NewFile?>(null) }
     var locked by remember { mutableStateOf<ByteArray?>(null) }
+    // The scanned front, waiting for its back.
+    var front by rememberSaveable { mutableStateOf<String?>(null) }
     var kind by rememberSaveable { mutableStateOf(DocKind.AADHAAR) }
     var title by rememberSaveable { mutableStateOf("") }
+    // True once the custom-name field is in use: no kind chip stays lit then.
+    var custom by rememberSaveable { mutableStateOf(false) }
+    var tags by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var wrong by remember { mutableStateOf(false) }
     var working by remember { mutableStateOf(false) }
+    // True while a scan, photo or PDF is being turned into a document.
+    var preparing by remember { mutableStateOf(false) }
 
     suspend fun takePdf(bytes: ByteArray) {
         when (Media.checkPdf(bytes, null)) {
@@ -270,22 +284,60 @@ fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
             else -> toast(context, "That PDF couldn't be opened")
         }
     }
+    /** One picture stays a photo; two become one A4 page, front beside back. */
+    suspend fun takeSides(sides: List<Uri>) {
+        ready = if (sides.size == 1) NewFile(Media.importPhoto(sides[0]), "image/jpeg", null)
+        else NewFile(Vault.putBlob(Media.idSheet(sides.take(2))), "application/pdf", null)
+    }
     fun take(block: suspend () -> Unit) {
-        scope.launch { runCatching { block() }.onFailure { toast(context, it.message ?: "Couldn't add that file") } }
+        preparing = true
+        scope.launch { runCatching { block() }.onFailure { toast(context, it.message ?: "Couldn't add that file") }; preparing = false }
     }
 
-    // One page is kept as a photo; several become one PDF.
-    val scanner = rememberScanner { pages, pdf ->
+    // The scanner is never reopened from inside its own result; the full screen below does it on a tap.
+    val scanner = rememberScanner { pages, _ ->
+        val page = pages.firstOrNull() ?: return@rememberScanner
+        val f = front
+        if (f == null) front = page.toString()
+        else { front = null; take { takeSides(listOf(Uri.parse(f), page)) } }
+    }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris: List<Uri> ->
+        if (uris.isEmpty()) return@rememberLauncherForActivityResult
         take {
-            if (pages.size > 1 && pdf != null) takePdf(Media.readUri(pdf))
-            else if (pages.isNotEmpty()) ready = NewFile(Media.importPhoto(pages[0]), "image/jpeg", null)
+            val images = uris.filter { Media.mimeOf(it).startsWith("image/") }
+            if (images.isNotEmpty()) takeSides(images) else takePdf(Media.readUri(uris[0]))
         }
     }
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-        uri ?: return@rememberLauncherForActivityResult
-        take {
-            if (Media.mimeOf(uri).startsWith("image/")) ready = NewFile(Media.importPhoto(uri), "image/jpeg", null)
-            else takePdf(Media.readUri(uri))
+
+    if (preparing) Dialog(onDismissRequest = {}, properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.background(scheme.surface, RoundedCornerShape(22.dp)).padding(horizontal = 34.dp, vertical = 28.dp)
+        ) {
+            CircularProgressIndicator(strokeWidth = 3.dp, color = scheme.primary, modifier = Modifier.size(34.dp))
+            Spacer(Modifier.height(14.dp))
+            Text("Preparing your document…", style = MaterialTheme.typography.titleSmall, color = scheme.onSurface)
+        }
+    }
+
+    front?.let { f ->
+        Dialog(onDismissRequest = {}, properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false)) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize().background(scheme.background).padding(28.dp)
+            ) {
+                IconBubble(Icons.Outlined.NoteAdd, size = 96.dp, iconSize = 44.dp)
+                Spacer(Modifier.height(26.dp))
+                Text("Front saved", style = MaterialTheme.typography.labelLarge, color = scheme.primary)
+                Spacer(Modifier.height(6.dp))
+                Text("Now scan the back", style = MaterialTheme.typography.displaySmall, color = scheme.onBackground, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(10.dp))
+                Text("Both sides are placed side by side on one A4 page, like a photocopy.", style = MaterialTheme.typography.bodyLarge, color = scheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(34.dp))
+                PrimaryButton("Scan the back", Icons.Outlined.NoteAdd, { scanner.scan(1, false) }, Modifier.fillMaxWidth())
+                Spacer(Modifier.height(12.dp))
+                SecondaryButton("It has one side only", null, { front = null; take { takeSides(listOf(Uri.parse(f))) } }, Modifier.fillMaxWidth(), tint = scheme.onSurface)
+            }
         }
     }
 
@@ -312,31 +364,42 @@ fun rememberDocAdder(onAdded: (Doc) -> Unit): DocAdder {
     }
 
     ready?.let { file ->
+        fun reset() { ready = null; title = ""; tags = ""; custom = false }
         WarmDialog(
             icon = Icons.Outlined.NoteAdd, accent = scheme.primary, title = "Name this document",
-            confirmLabel = "Save",
+            confirmLabel = "Save", confirmEnabled = !custom || title.isNotBlank(),
             onConfirm = {
-                val custom = title.trim()
-                val name = custom.ifBlank { kind.label }
-                val doc = Doc(Vault.newId(), if (custom.isBlank()) kind else DocKind.OTHER, name, file.blobId, file.mime, "$name.${if (file.mime == "application/pdf") "pdf" else "jpg"}", file.password)
+                val name = if (custom) title.trim() else kind.label
+                val labels = tags.split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+                val doc = Doc(Vault.newId(), if (custom) DocKind.OTHER else kind, name, file.blobId, file.mime,
+                    "$name.${if (file.mime == "application/pdf") "pdf" else "jpg"}", file.password, labels)
                 Vault.saveDoc(doc)
-                ready = null; title = ""
+                // Get its preview and viewer page ready in the background, so opening it is instant.
+                AppScope.launch {
+                    Media.renderPage(doc, 0, 420)
+                    if (doc.isPdf) { Media.pageCount(doc); Media.renderPage(doc, 0, Media.viewerWidth) }
+                }
+                reset()
                 onAdded(doc)
             },
-            dismissLabel = "Discard", onDismiss = { Vault.deleteBlob(file.blobId); ready = null; title = "" }
+            dismissLabel = "Discard", onDismiss = { Vault.deleteBlob(file.blobId); reset() }
         ) {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // A chip is lit only while its name is the one in use; typing your own switches them all off.
-                DocKind.entries.filter { it != DocKind.OTHER }.forEach { k -> Chip(k.label, kind == k && title.isBlank()) { kind = k; title = "" } }
+                // Tapping the custom-name field switches every chip off; tapping a chip switches back.
+                DocKind.entries.filter { it != DocKind.OTHER }.forEach { k -> Chip(k.label, !custom && kind == k) { kind = k; custom = false; title = ""; focus.clearFocus() } }
             }
             Spacer(Modifier.height(12.dp))
-            WarmField(title, { title = it }, "Custom name", keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+            WarmField(title, { title = it; custom = true }, "Custom name", keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                onFocus = { custom = true })
+            Spacer(Modifier.height(8.dp))
+            WarmField(tags, { tags = it }, "Tags", keyboard = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                supporting = "Whose it is, e.g. Mummy, Papa. Separate with commas.")
         }
     }
 
     return remember {
         DocAdder(
-            scan = { scanner.scan(20, true) },
+            scan = { front = null; scanner.scan(1, false) },
             import = { Pin.awayOnPurpose = true; picker.launch(arrayOf("application/pdf", "image/*")) }
         )
     }

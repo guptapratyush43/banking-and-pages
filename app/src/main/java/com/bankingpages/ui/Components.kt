@@ -6,6 +6,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,6 +43,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -339,15 +342,29 @@ fun WarmField(
     supporting: String? = null,
     isError: Boolean = false,
     leading: ImageVector? = null,
+    /** Bump to shake the field from side to side: "that isn't valid". */
+    shakeKey: Int = 0,
+    onBlur: (() -> Unit)? = null,
+    onFocus: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null
 ) {
     val scheme = MaterialTheme.colorScheme
     val danger = LocalStatusColors.current.danger
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
+    val haptic = LocalHapticFeedback.current
+    val shake = remember { Animatable(0f) }
+    LaunchedEffect(shakeKey) {
+        if (shakeKey > 0) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            for (x in listOf(13f, -11f, 8f, -5f, 2f, 0f)) shake.animateTo(x, spring(stiffness = 2600f))
+        }
+    }
+    var wasFocused by remember { mutableStateOf(false) }
+    LaunchedEffect(focused) { if (wasFocused && !focused) onBlur?.invoke(); if (!wasFocused && focused) onFocus?.invoke(); wasFocused = focused }
     val ring by animateColorAsState(if (isError) danger else if (focused) scheme.primary else Color.Transparent, label = "fieldRing")
     val shape = RoundedCornerShape(14.dp)
-    Column(modifier.fillMaxWidth()) {
+    Column(modifier.fillMaxWidth().graphicsLayer { translationX = shake.value * density }) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -355,8 +372,8 @@ fun WarmField(
                 .clip(shape)
                 .background(scheme.surfaceVariant)
                 .border(1.5.dp, ring, shape)
-                .heightIn(min = 54.dp)
-                .padding(start = 16.dp, end = if (trailing != null) 6.dp else 16.dp, top = 9.dp, bottom = 10.dp)
+                .heightIn(min = 50.dp)
+                .padding(start = 16.dp, end = if (trailing != null) 6.dp else 16.dp, top = 7.dp, bottom = 8.dp)
         ) {
             if (leading != null) {
                 val tint by animateColorAsState(if (focused) scheme.primary else scheme.onSurfaceVariant, label = "fieldIcon")

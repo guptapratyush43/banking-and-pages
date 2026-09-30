@@ -39,7 +39,6 @@ import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -83,7 +82,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val RowPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp)
+private val RowPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp)
 
 /**
  * The vault: the app name, then Documents and Banking, each a titled row of
@@ -115,7 +114,7 @@ fun HomeScreen(
                 )
             }
             .verticalScroll(rememberScrollState())
-            .padding(top = 30.dp, bottom = 130.dp)
+            .padding(top = 18.dp, bottom = 130.dp)
     ) {
         Column(Modifier.padding(horizontal = 20.dp).entrance(0, "head", seen, baseDelay = 0)) {
             Text(
@@ -126,7 +125,7 @@ fun HomeScreen(
             Text("Banking and Pages", style = MaterialTheme.typography.displaySmall, color = scheme.onBackground)
         }
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(18.dp))
         SectionHeader("Documents", docs.size, Modifier.padding(horizontal = 20.dp).entrance(1, "docsHead", seen, baseDelay = 0)) {
             Box {
                 AddPill("Add", { addMenu = true })
@@ -142,7 +141,7 @@ fun HomeScreen(
             onScanDoc, Modifier.entrance(2, "docsEmpty", seen, baseDelay = 0)
         ) else DocsRow(docs, seen, onOpenDoc)
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(10.dp))
         SectionHeader("Banking", accounts.size, Modifier.padding(horizontal = 20.dp).entrance(3, "banksHead", seen, baseDelay = 0)) {
             AddPill("Add", onAddBank)
         }
@@ -207,7 +206,7 @@ private fun DocCard(d: Doc, dragging: Boolean, onOpen: () -> Unit, modifier: Mod
             WarmCard(padding = 8.dp, onClick = onOpen) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1.02f).clip(RoundedCornerShape(12.dp)).background(scheme.surfaceVariant)
+                    modifier = Modifier.fillMaxWidth().aspectRatio(1.3f).clip(RoundedCornerShape(12.dp)).background(scheme.surfaceVariant)
                 ) {
                     val img = preview
                     if (img != null) Image(img, null, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
@@ -220,7 +219,10 @@ private fun DocCard(d: Doc, dragging: Boolean, onOpen: () -> Unit, modifier: Mod
                 Spacer(Modifier.height(9.dp))
                 Text(d.title, style = MaterialTheme.typography.titleSmall, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp))
                 Spacer(Modifier.height(5.dp))
-                Tag(if (d.isPdf) "PDF" else "Photo", Modifier.padding(start = 4.dp))
+                Row(Modifier.padding(start = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    d.tags.take(2).forEach { Tag(it, Modifier.weight(1f, fill = false), color = scheme.primary) }
+                    Tag(if (d.isPdf) "PDF" else "Photo")
+                }
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CardAction(Icons.Rounded.Share, "Share ${d.title}", {
@@ -270,19 +272,19 @@ private fun BankCard(a: Account, dragging: Boolean, onOpen: () -> Unit, modifier
         Box(contentAlignment = Alignment.TopCenter) {
             WarmCard(padding = 16.dp, onClick = onOpen) {
                 Row(verticalAlignment = Alignment.Top) {
-                    BankLogo(a.bankId, a.bankName, 56.dp)
+                    BankLogo(a.bankId, a.bankName, 48.dp)
                     Spacer(Modifier.weight(1f))
                     if (a.allBlobs.isNotEmpty()) Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.background(scheme.surfaceVariant, Pill).padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Icon(Icons.Rounded.PhotoCamera, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
+                        Icon(Icons.Rounded.Description, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
                         Spacer(Modifier.width(4.dp))
                         Text("${a.allBlobs.size}", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                     }
                 }
-                Spacer(Modifier.height(18.dp))
-                Text(a.bankName, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.height(10.dp))
+                Text(a.bankName, style = MaterialTheme.typography.titleMedium, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     listOf(a.maskedNumber, a.holder.substringBefore(' ')).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty { "No account number yet" },
@@ -290,7 +292,7 @@ private fun BankCard(a: Account, dragging: Boolean, onOpen: () -> Unit, modifier
                 )
                 Spacer(Modifier.height(10.dp))
                 Tag(a.type.ifBlank { "Account" })
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
                 CardAction(Icons.Rounded.Share, "Share account details only", {
                     Pin.awayOnPurpose = true
                     Media.shareText(context, a.shareText(), "Share ${a.bankName} details")

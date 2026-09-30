@@ -99,6 +99,10 @@ class NavViewModel : ViewModel() {
     val tab = MutableStateFlow(0)
     /** Items that have already made their entrance; kept so returning never replays it. */
     val seen = mutableSetOf<Any>()
+    /** Where each open bank page was scrolled to, so coming back from a photo lands in the same place. */
+    val detailScroll = mutableMapOf<String, androidx.compose.foundation.ScrollState>()
+    /** What has already risen into place on an open bank page, so coming back shows it at once with nothing replayed. */
+    val detailSeen = mutableMapOf<String, MutableSet<Any>>()
 }
 
 @Composable
@@ -187,7 +191,7 @@ private fun MainNav(nav: NavViewModel) {
                         docs = docs,
                         seen = remember { mutableSetOf() },
                         onAddBank = { go(Screen.Picker) },
-                        onOpenAccount = { go(Screen.Detail(it.id)) },
+                        onOpenAccount = { nav.detailScroll.remove(it.id); nav.detailSeen.remove(it.id); go(Screen.Detail(it.id)) },
                         onScanDoc = adder.scan,
                         onImportDoc = adder.import,
                         onOpenDoc = { go(Screen.DocView(it.id)) }
@@ -219,7 +223,8 @@ private fun MainNav(nav: NavViewModel) {
                 val a = accounts.firstOrNull { it.id == s.id }
                 if (a == null) LaunchedEffect(Unit) { home() }
                 else DetailScreen(
-                    a, onBack = home,
+                    a, scroll = nav.detailScroll.getOrPut(a.id) { androidx.compose.foundation.ScrollState(0) },
+                    seen = nav.detailSeen.getOrPut(a.id) { mutableSetOf() }, onBack = home,
                     onEdit = { go(Screen.Editor(a.id, null)) },
                     onDelete = { Vault.deleteAccount(a.id); toast(context, "${a.bankName} deleted"); home() },
                     onOpenPhoto = { blob, label -> go(Screen.Photo(a.id, blob, label)) }
